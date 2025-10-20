@@ -12,6 +12,7 @@ class DatabaseService extends Service {
   late final Directory dir;
   File get tasksFile => File(dir / "tasks.json");
   File get categoriesFile => File(dir / "categories.json");
+  final encoder = const JsonEncoder.withIndent("  ");
 
   @override
   Future<void> init() async {
@@ -33,7 +34,7 @@ class DatabaseService extends Service {
       for (final element in elements)
         element.toJson(),
     ];
-    final json = jsonEncode(jsonList);
+    final json = encoder.convert(jsonList);
     await file.writeAsString(json);
   }
 

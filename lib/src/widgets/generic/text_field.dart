@@ -4,7 +4,7 @@ import "package:flutter/services.dart";
 class CreateTextField extends StatelessWidget {
   final VoidCallback onCancel;
   final ValueChanged<String> onSubmit;
-  final String hint;
+  final String? hint;
   final TextEditingController controller;
   final FocusNode? focusNode;
 
@@ -12,7 +12,7 @@ class CreateTextField extends StatelessWidget {
     required this.onCancel,
     required this.onSubmit,
     required this.controller,
-    required this.hint,
+    this.hint,
     this.focusNode,
   });
 

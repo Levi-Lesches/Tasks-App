@@ -26,5 +26,6 @@ class TasksApp extends StatelessWidget {
       useMaterial3: true,
     ),
     routerConfig: router,
+    debugShowCheckedModeBanner: false,
   );
 }

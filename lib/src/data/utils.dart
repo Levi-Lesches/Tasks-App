@@ -45,4 +45,8 @@ extension NullableUtils<T> on T? {
   }
 }
 
+extension StringUtils on String {
+  String? get nullIfEmpty => isEmpty ? null : this;
+}
+
 String formatDate(DateTime date) => "${date.month}/${date.day}/${date.year}";

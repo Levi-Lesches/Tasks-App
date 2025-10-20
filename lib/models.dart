@@ -2,6 +2,7 @@ import "src/models/model.dart";
 import "src/models/tasks.dart";
 
 export "src/models/model.dart";
+export "src/models/tasks.dart";
 
 /// A [DataModel] to manage all other data models.
 class Models extends DataModel {

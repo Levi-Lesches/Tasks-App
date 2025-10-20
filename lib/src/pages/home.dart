@@ -15,7 +15,33 @@ class HomePage extends ReactiveWidget<HomeModel> {
 
   @override
   Widget build(BuildContext context, HomeModel model) => Scaffold(
-    appBar: AppBar(title: const Text("Tasks")),
+    appBar: AppBar(
+      title: const Text("Tasks"),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.clear_all),
+          tooltip: "Clear finished tasks",
+          onPressed: models.tasks.clearFinishedTasks,
+        ),
+        MenuAnchor(
+          builder: (context, controller, child) => IconButton(
+            icon: const Icon(Icons.sort),
+            onPressed: controller.open,
+            tooltip: "Sort by",
+          ),
+          menuChildren: [
+            MenuItemButton(
+              onPressed: () => models.tasks.sortMode = SortMode.statusPriority,
+              child: const Text("Status"),
+            ),
+            MenuItemButton(
+              onPressed: () => models.tasks.sortMode = SortMode.priorityStatus,
+              child: const Text("Priority"),
+            ),
+          ],
+        ),
+      ],
+    ),
     body: ListView(
       padding: const EdgeInsets.all(8),
       children: [
@@ -29,9 +55,13 @@ class HomePage extends ReactiveWidget<HomeModel> {
 
         const SizedBox(height: 12),
 
-        header(context, "All categories"),
+        header(context, "All Lists"),
         for (final category in models.tasks.categories)
-          CategoryTile(category: category),
+          if (category != doneCategory)
+            CategoryTile(category: category),
+
+        const Divider(),
+        CategoryTile(category: doneCategory),
 
         if (model.isEditingCategory) CreateTextField(
           onCancel: model.cancelCategory,

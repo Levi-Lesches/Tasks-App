@@ -45,12 +45,38 @@ class _CategoryTileState extends State<CategoryTile> {
       title: Text(widget.category.title),
       contentPadding: EdgeInsets.zero,
       subtitle: widget.category.description.ifNotNull(Text.new),
+      // trailing: widget.category == doneCategory ? null :
     ),
     leading: IconButton(
       icon: const Icon(Icons.edit),
-      onPressed: () { },  // TODO: Edit categories
+      onPressed: () { },
     ),
     children: [
+      Row(
+        children: [
+          Expanded(child: Text("Name", textAlign: TextAlign.center, style: context.textTheme.labelLarge)),
+          SizedBox(width: 130, child: Text("Due Date", textAlign: TextAlign.center, style: context.textTheme.labelLarge)),
+          SizedBox(
+            width: 150,
+            child: Text(
+              widget.category == doneCategory ? "Original List"
+                : models.tasks.sortMode == SortMode.statusPriority ? "↑ Status" : "Status",
+              textAlign: TextAlign.center,
+              style: context.textTheme.labelLarge,
+            ),
+          ),
+          SizedBox(
+            width: 112,
+            child: Text(
+              models.tasks.sortMode == SortMode.priorityStatus ? "↑ Priority" : "Priority",
+              textAlign: TextAlign.center,
+              style: context.textTheme.labelLarge,
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 4),
+
       for (final task in models.tasks.getTasksForCategory(widget.category)) ...[
         TaskTile(task),
       ],

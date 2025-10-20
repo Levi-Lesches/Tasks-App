@@ -6,6 +6,8 @@ import "utils.dart";
 
 extension type TaskID(String value) {
   factory TaskID.unique() => TaskID(const UuidV4().generate());
+
+  static TaskID? maybe(String? id) => id == null ? null : TaskID(id);
 }
 
 abstract class HasChip {
@@ -33,11 +35,11 @@ enum TaskPriority implements HasChip {
 }
 
 enum TaskStatus implements HasChip {
-  todo("To-Do", Icons.info, null),
-  inProgress("In progress", Icons.timer, Colors.yellow),
-  done("Done", Icons.done, Colors.green),
   stuck("Stuck", Icons.error, Colors.red),
-  followUp("Waiting", Icons.person, Colors.blueGrey);
+  inProgress("In progress", Icons.timer, Colors.yellow),
+  todo("To-Do", Icons.info, null),
+  followUp("Waiting", Icons.person, Colors.blueGrey),
+  done("Done", Icons.done, Colors.green);
 
   @override final IconData icon;
   @override final Color? color;
@@ -56,6 +58,7 @@ class Task extends JsonSerializable {
   CategoryID categoryID;
   String title;
 
+  CategoryID? originalCategoryID;
   String? description;
   TaskPriority priority;
   TaskStatus _status;
@@ -74,6 +77,7 @@ class Task extends JsonSerializable {
   Task.fromJson(Json json) :
     id = TaskID(json["id"]),
     categoryID = CategoryID(json["categoryID"]),
+    originalCategoryID = CategoryID.fromJson(json["originalCategoryID"]),
     title = json["title"],
     description = json["description"],
     priority = TaskPriority.fromJson(json["priority"]),
@@ -110,6 +114,7 @@ class Task extends JsonSerializable {
     "dueDate": dueDate?.toIso8601String(),
     "startDate": startDate?.toIso8601String(),
     "doneDate": doneDate?.toIso8601String(),
+    "originalCategoryID": originalCategoryID,
   };
 
   @override
@@ -130,8 +135,4 @@ class Task extends JsonSerializable {
   }
 
   bool get isThreeLine => description != null && (doneDate != null || startDate != null);
-
-  void setPriority(TaskPriority priority) {
-
-  }
 }

@@ -4,10 +4,14 @@ import "package:tasks/models.dart";
 
 import "view_model.dart";
 
+// enum SortMode {
+
+// }
+
 /// The view model for the home page.
 class HomeModel extends ViewModel {
   List<Category> get categories => models.tasks.categories;
-  List<Task> get tasks => models.tasks.tasks;
+  late List<Task> tasks = models.tasks.tasks;
 
   final categoryController = TextEditingController();
 
