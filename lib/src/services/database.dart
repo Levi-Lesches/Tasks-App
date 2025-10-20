@@ -2,6 +2,7 @@ import "dart:convert";
 import "dart:io";
 
 import "package:path_provider/path_provider.dart";
+import "package:url_launcher/url_launcher.dart";
 
 import "service.dart";
 import "package:tasks/data.dart";
@@ -49,4 +50,17 @@ class DatabaseService extends Service {
 
   Future<void> writeTasks(List<Task> tasks) =>
     _writeJsonList(tasksFile, tasks);
+
+  void openFolder() {
+    launchUrl(dir.uri);
+  }
+
+  Future<Directory> saveBackup() async {
+    final now = DateTime.now();
+    final backupDir = Directory(dir / "backups" / formatTimestamp(now));
+    await backupDir.create(recursive: true);
+    await categoriesFile.copy(backupDir / "categories.json");
+    await tasksFile.copy(backupDir / "tasks.json");
+    return backupDir;
+  }
 }

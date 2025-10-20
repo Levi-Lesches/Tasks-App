@@ -6,8 +6,7 @@ import "utils.dart";
 
 extension type TaskID(String value) {
   factory TaskID.unique() => TaskID(const UuidV4().generate());
-
-  static TaskID? maybe(String? id) => id == null ? null : TaskID(id);
+  static TaskID? parse(String? id) => id == null ? null : TaskID(id);
 }
 
 abstract class HasChip {
@@ -122,17 +121,30 @@ class Task extends JsonSerializable {
 
   String? get bodyText {
     final buffer = StringBuffer();
-    if (description != null) buffer.write(description);
-    if (startDate != null || doneDate != null) {
-      if (description != null) buffer.writeln();
-      if (startDate != null) buffer.write("Started on ${formatDate(startDate!)}");
-      if (doneDate != null) {
-        if (startDate != null) buffer.write(" -- ");
-        buffer.write("Finished on ${formatDate(doneDate!)}");
+    if (description != null) {
+      final lines = description!.split("\n");
+      final line = lines.first;
+      if (line.length > 50) {
+        buffer.write(line.substring(0, 50));
+      } else {
+        buffer.write(line);
+      }
+      if (lines.first.length > 50 || lines.length > 1) buffer.write("...");
+    }
+    if (Task.showDates) {
+      if (startDate != null || doneDate != null) {
+        if (description != null) buffer.writeln();
+        if (startDate != null) buffer.write("Started on ${formatDate(startDate!)}");
+        if (doneDate != null) {
+          if (startDate != null) buffer.write(" -- ");
+          buffer.write("Finished on ${formatDate(doneDate!)}");
+        }
       }
     }
     return buffer.isEmpty ? null : buffer.toString();
   }
 
-  bool get isThreeLine => description != null && (doneDate != null || startDate != null);
+  bool get isThreeLine => showDates && (description != null && (doneDate != null || startDate != null));
+
+  static bool showDates = false;
 }

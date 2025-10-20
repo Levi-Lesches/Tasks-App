@@ -24,27 +24,6 @@ class _TaskTileState extends State<TaskTile> {
   _EditState? editState;
   late final originalCategory = models.tasks.getCategory(widget.task.originalCategoryID);
 
-  Color? getTextColor(Color? backgroundColor) {
-    if (backgroundColor == null) return null;
-    final brightness = ThemeData.estimateBrightnessForColor(backgroundColor);
-    return switch (brightness) {
-      Brightness.dark => Colors.white,
-      Brightness.light => Colors.black,
-    };
-  }
-
-  Widget propertyChip(HasChip property) => Chip(
-    label: Text(
-      property.toString(),
-      style: TextStyle(color: getTextColor(property.color)),
-    ),
-    avatar: Icon(
-      property.icon,
-      color: getTextColor(property.color),
-    ),
-    backgroundColor: property.color,
-  );
-
   Future<void> changePriority(TaskPriority priority) async {
     widget.task.priority = priority;
     await models.tasks.saveTasks();
@@ -98,7 +77,7 @@ class _TaskTileState extends State<TaskTile> {
       children: [
         Expanded(
           child: ListTile(
-            visualDensity: const VisualDensity(vertical: -4),
+            visualDensity: const VisualDensity(vertical: -4, horizontal: -4),
             onTap: editTitle,
             focusNode: focus,
             title: editState != null

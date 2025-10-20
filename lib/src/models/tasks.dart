@@ -28,7 +28,7 @@ class TasksModel extends DataModel {
     _sortTasks();
     if (!categories.contains(doneCategory)) {
       categories.add(doneCategory);
-      await services.database.writeCategories(categories);
+      await saveCategories();
     }
   }
 
@@ -50,6 +50,19 @@ class TasksModel extends DataModel {
     scaffoldKey.currentState?.showSnackBar(snackBar);
   }
 
+  void _showCategoryUndoPrompt(Category category, List<Task> tasks) {
+    final snackBar = SnackBar(
+      content: Text("Deleted $category (${tasks.length} tasks)"),
+      action: SnackBarAction(label: "Undo", onPressed: () async {
+        await addCategory(category);
+        for (final task in tasks) {
+          await addTask(task);
+        }
+      },),
+    );
+    scaffoldKey.currentState?.showSnackBar(snackBar);
+  }
+
   Iterable<Task> getTasksForCategory(Category category) =>
     tasks.where((task) => task.categoryID == category.id);
 
@@ -59,7 +72,7 @@ class TasksModel extends DataModel {
   Future<Category> createCategory(String title) async {
     final category = Category(title: title);
     categories.add(category);
-    await services.database.writeCategories(categories);
+    await saveCategories();
     return category;
   }
 
@@ -102,4 +115,25 @@ class TasksModel extends DataModel {
     categories.firstWhereOrNull((category) => category.id == id);
 
   Task? byID(TaskID taskID) => tasks.firstWhereOrNull((task) => task.id == taskID);
+
+  Future<void> deleteCategory(Category category) async {
+    final queue = [...getTasksForCategory(category)];
+    for (final task in queue) {
+      tasks.remove(task);
+    }
+    categories.remove(category);
+    await saveTasks();
+    await saveCategories();
+    _showCategoryUndoPrompt(category, queue);
+  }
+
+  Future<void> saveCategories() async {
+    await services.database.writeCategories(categories);
+    notifyListeners();
+  }
+
+  Future<void> addCategory(Category category) async {
+    categories.add(category);
+    await saveCategories();
+  }
 }

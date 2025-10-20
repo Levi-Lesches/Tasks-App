@@ -7,6 +7,9 @@ class CreateTextField extends StatelessWidget {
   final String? hint;
   final TextEditingController controller;
   final FocusNode? focusNode;
+  final TextStyle? style;
+  final bool multiline;
+  final bool rounded;
 
   const CreateTextField({
     required this.onCancel,
@@ -14,6 +17,9 @@ class CreateTextField extends StatelessWidget {
     required this.controller,
     this.hint,
     this.focusNode,
+    this.style,
+    this.multiline = false,
+    this.rounded = false,
   });
 
   @override
@@ -29,8 +35,11 @@ class CreateTextField extends StatelessWidget {
       controller: controller,
       autofocus: true,
       onSubmitted: onSubmit,
+      style: style,
+      maxLines: multiline ? null : 1,
       decoration: InputDecoration(
         hintText: hint,
+        border: rounded ? const OutlineInputBorder() : null,
       ),
     ),
   );

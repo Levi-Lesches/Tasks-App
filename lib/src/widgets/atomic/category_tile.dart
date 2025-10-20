@@ -45,11 +45,11 @@ class _CategoryTileState extends State<CategoryTile> {
       title: Text(widget.category.title),
       contentPadding: EdgeInsets.zero,
       subtitle: widget.category.description.ifNotNull(Text.new),
-      // trailing: widget.category == doneCategory ? null :
     ),
     leading: IconButton(
-      icon: const Icon(Icons.edit),
-      onPressed: () { },
+      onPressed: () => models.tasks.deleteCategory(widget.category),
+      tooltip: "Delete list",
+      icon: const Icon(Icons.delete),
     ),
     children: [
       Row(

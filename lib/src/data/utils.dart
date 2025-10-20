@@ -47,6 +47,8 @@ extension NullableUtils<T> on T? {
 
 extension StringUtils on String {
   String? get nullIfEmpty => isEmpty ? null : this;
+  String operator /(String other) => "$this/$other";
 }
 
 String formatDate(DateTime date) => "${date.month}/${date.day}/${date.year}";
+String formatTimestamp(DateTime dt) => "${dt.year}-${dt.month}-${dt.day}-${dt.hour}-${dt.minute}-${dt.second}";
