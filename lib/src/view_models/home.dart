@@ -1,3 +1,4 @@
+import "package:flutter/widgets.dart";
 import "package:tasks/data.dart";
 import "package:tasks/models.dart";
 
@@ -6,13 +7,30 @@ import "view_model.dart";
 /// The view model for the home page.
 class HomeModel extends ViewModel {
   List<Category> get categories => models.tasks.categories;
-  Map<TaskPriority, Iterable<Task>> get tasksByPriority => {
-    for (final priority in TaskPriority.values)
-      priority: models.tasks.tasks.where((task) => task.priority == priority),
-  };
+  List<Task> get tasks => models.tasks.tasks;
+
+  final categoryController = TextEditingController();
+
+  bool isEditingCategory = false;
+
+  Iterable<Task> get todaysTasks => models.tasks.tasksWithPriority(TaskPriority.today);
 
   @override
   Future<void> init() async {
+    models.tasks.addListener(notifyListeners);
+  }
 
+  void addCategory() {
+    isEditingCategory = true;
+    categoryController.clear();
+    categoryController.text = "New category...";
+    categoryController.selection = TextSelection(baseOffset: 0, extentOffset: categoryController.text.length);
+    notifyListeners();
+  }
+
+  void onFinishCategory(String value) {
+    isEditingCategory = false;
+    models.tasks.createCategory(value);
+    notifyListeners();
   }
 }

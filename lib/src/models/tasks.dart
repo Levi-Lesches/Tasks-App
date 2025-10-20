@@ -12,4 +12,17 @@ class TasksModel extends DataModel {
     categories = await services.database.readCategories();
     tasks = await services.database.readTasks();
   }
+
+  Iterable<Task> getTasksForCategory(Category category) =>
+    tasks.where((task) => task.categoryID == category.id);
+
+  Iterable<Task> tasksWithPriority(TaskPriority priority) =>
+    tasks.where((task) => task.priority == priority);
+
+  Future<Category> createCategory(String title) async {
+    final category = Category(title: title);
+    categories.add(category);
+    await services.database.writeCategories(categories);
+    return category;
+  }
 }

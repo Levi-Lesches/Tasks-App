@@ -1,6 +1,11 @@
+import "package:uuid/v4.dart";
+
+import "category.dart";
 import "utils.dart";
 
-extension type TaskID(String value) { }
+extension type TaskID(String value) {
+  factory TaskID.unique() => TaskID(const UuidV4().generate());
+}
 
 enum TaskPriority {
   today,
@@ -25,8 +30,9 @@ enum TaskStatus {
 
 class Task extends JsonSerializable {
   final TaskID id;
+  CategoryID categoryID;
   String title;
-  String body;
+  String? description;
   TaskPriority priority;
   TaskStatus status;
   DateTime? dueDate;
@@ -34,8 +40,9 @@ class Task extends JsonSerializable {
 
   Task({
     required this.id,
+    required this.categoryID,
     required this.title,
-    required this.body,
+    required this.description,
     required this.priority,
     required this.status,
     required this.dueDate,
@@ -44,8 +51,9 @@ class Task extends JsonSerializable {
 
   Task.fromJson(Json json) :
     id = TaskID(json["id"]),
+    categoryID = CategoryID(json["categoryID"]),
     title = json["title"],
-    body = json["body"],
+    description = json["description"],
     priority = TaskPriority.fromJson(json["priority"]),
     status = TaskStatus.fromJson(json["status"]),
     dueDate = parseDateTime(json["dueDate"]),
@@ -54,8 +62,9 @@ class Task extends JsonSerializable {
   @override
   Json toJson() => {
     "id": id.value,
+    "categoryID": categoryID.value,
     "title": title,
-    "body": body,
+    "description": description,
     "priority": priority.toJson(),
     "status": status.toJson(),
     "dueDate": dueDate?.toIso8601String(),
