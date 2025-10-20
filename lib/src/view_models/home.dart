@@ -23,14 +23,17 @@ class HomeModel extends ViewModel {
   void addCategory() {
     isEditingCategory = true;
     categoryController.clear();
-    categoryController.text = "New category...";
-    categoryController.selection = TextSelection(baseOffset: 0, extentOffset: categoryController.text.length);
     notifyListeners();
   }
 
   void onFinishCategory(String value) {
     isEditingCategory = false;
     models.tasks.createCategory(value);
+    notifyListeners();
+  }
+
+  void cancelCategory() {
+    isEditingCategory = false;
     notifyListeners();
   }
 }

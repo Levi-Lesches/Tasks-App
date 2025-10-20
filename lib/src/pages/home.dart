@@ -21,20 +21,24 @@ class HomePage extends ReactiveWidget<HomeModel> {
       children: [
         if (model.todaysTasks.isNotEmpty) ...[
           header(context, "Today's tasks"),
-          for (final task in models.tasks.tasksWithPriority(TaskPriority.today))
+          for (final task in models.tasks.tasksWithPriority(TaskPriority.today)) ...[
             TaskTile(task),
+            const Divider(),
+          ],
         ],
+
+        const SizedBox(height: 12),
 
         header(context, "All categories"),
         for (final category in models.tasks.categories)
-          CategoryTile(category),
+          CategoryTile(category: category),
 
-        if (model.isEditingCategory)
-          TextField(
-            controller: model.categoryController,
-            autofocus: true,
-            onSubmitted: model.onFinishCategory,
-          ),
+        if (model.isEditingCategory) CreateTextField(
+          onCancel: model.cancelCategory,
+          onSubmit: model.onFinishCategory,
+          controller: model.categoryController,
+          hint: "New Category",
+        ),
       ],
     ),
     floatingActionButton: FloatingActionButton(

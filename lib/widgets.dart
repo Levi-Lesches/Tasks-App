@@ -4,7 +4,12 @@ export "package:go_router/go_router.dart";
 
 export "src/widgets/atomic/category_tile.dart";
 export "src/widgets/atomic/task_tile.dart";
+
+export "src/widgets/generic/menu_picker.dart";
+export "src/widgets/generic/text_field.dart";
 export "src/widgets/generic/reactive_widget.dart";
+
+final scaffoldKey = GlobalKey<ScaffoldMessengerState>();
 
 /// Helpful methods on [BuildContext].
 extension ContextUtils on BuildContext {

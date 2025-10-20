@@ -37,3 +37,12 @@ DateTime? parseDateTime(String? json) =>
 abstract class JsonSerializable {
   Json toJson();
 }
+
+extension NullableUtils<T> on T? {
+  R? ifNotNull<R>(R Function(T) func) {
+    final self = this;
+    return self == null ? null : func(self);
+  }
+}
+
+String formatDate(DateTime date) => "${date.month}/${date.day}/${date.year}";

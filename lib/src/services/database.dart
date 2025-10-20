@@ -15,7 +15,8 @@ class DatabaseService extends Service {
 
   @override
   Future<void> init() async {
-    dir = await getApplicationDocumentsDirectory();
+    dir = Directory(await getApplicationDocumentsDirectory() / "Tasks App");
+    await dir.create(recursive: true);
     await tasksFile.create();
     await categoriesFile.create();
   }

@@ -3,6 +3,7 @@ import "package:flutter/material.dart";
 import "package:tasks/models.dart";
 import "package:tasks/pages.dart";
 import "package:tasks/services.dart";
+import "package:tasks/widgets.dart";
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,6 +21,7 @@ class TasksApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MaterialApp.router(
     title: "Flutter Demo",
+    scaffoldMessengerKey: scaffoldKey,
     theme: ThemeData(
       useMaterial3: true,
     ),
