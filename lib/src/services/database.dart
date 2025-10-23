@@ -9,7 +9,14 @@ import "package:tasks/data.dart";
 
 typedef FromJson<T> = T Function(Json);
 
-class DatabaseService extends Service {
+abstract class BaseDatabase extends Service {
+  Future<List<Category>> readCategories();
+  Future<void> writeCategories(List<Category> categories);
+  Future<List<Task>> readTasks();
+  Future<void> writeTasks(List<Task> tasks);
+}
+
+class DatabaseService extends BaseDatabase {
   late final Directory dir;
   File get tasksFile => File(dir / "tasks.json");
   File get categoriesFile => File(dir / "categories.json");
@@ -39,15 +46,19 @@ class DatabaseService extends Service {
     await file.writeAsString(json);
   }
 
+  @override
   Future<List<Category>> readCategories() =>
     _readJsonList(categoriesFile, Category.fromJson);
 
+  @override
   Future<void> writeCategories(List<Category> categories) =>
     _writeJsonList(categoriesFile, categories);
 
+  @override
   Future<List<Task>> readTasks() =>
     _readJsonList(tasksFile, Task.fromJson);
 
+  @override
   Future<void> writeTasks(List<Task> tasks) =>
     _writeJsonList(tasksFile, tasks);
 

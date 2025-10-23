@@ -3,6 +3,7 @@ library;
 
 import "src/services/service.dart";
 import "src/services/database.dart";
+import "src/services/client.dart";
 
 /// A [Service] that manages all other services used by the app.
 class Services extends Service {
@@ -11,9 +12,10 @@ class Services extends Service {
 
   // Define your services here
   final database = DatabaseService();
+  final client = RemoteClient();
 
 	/// The different services to initialize, in this order.
-	List<Service> get services => [database];
+	List<Service> get services => [database, client];
 
 	@override
 	Future<void> init() async {
