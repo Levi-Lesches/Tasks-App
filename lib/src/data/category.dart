@@ -2,14 +2,14 @@ import "package:uuid/v4.dart";
 
 import "utils.dart";
 
-extension type CategoryID(String value) {
+extension type CategoryID(String value) implements String {
   factory CategoryID.unique() => CategoryID(const UuidV4().generate());
 
   static CategoryID? fromJson(String? json) => json == null ? null : CategoryID(json);
 }
 
-class Category extends JsonSerializable {
-  final CategoryID id;
+class Category extends JsonSerializable with Syncable {
+  @override final CategoryID id;
   String title;
   String? description;
 

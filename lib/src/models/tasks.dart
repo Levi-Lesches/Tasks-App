@@ -15,6 +15,7 @@ class TasksModel extends DataModel {
   List<Task> tasks = [];
   List<Category> categories = [];
   SortMode _sortMode = SortMode.priorityStatus;
+  DateTime lastUpdated = DateTime.now();
   SortMode get sortMode => _sortMode;
   set sortMode(SortMode mode) {
     _sortMode = mode;
@@ -25,11 +26,40 @@ class TasksModel extends DataModel {
   Future<void> init() async {
     categories = await services.database.readCategories();
     tasks = await services.database.readTasks();
-    _sortTasks();
     if (!categories.contains(doneCategory)) {
+      doneCategory.isModified = true;
       categories.add(doneCategory);
       await saveCategories();
     }
+    await sync();
+  }
+
+  void _merge<T extends Syncable>(List<T> updated, List<T> existing) {
+    for (final newValue in updated) {
+      final index = existing.indexWhereOrNull((value) => value.id == newValue.id);
+      if (index == null) {
+        existing.add(newValue);
+      } else {
+        final value = existing[index];
+        if (value.isModified) continue;  // do not override local changes
+        existing[index] = newValue;
+      }
+    }
+  }
+
+  // Trinket works by first downloading, then uploading
+  // Tasks have a modified flag on client, version flag on server
+  // The server and client both have version numbers
+  // Download: POST w/ client version. Server returns all tasks that have been updated since then + server_version
+  // Upload: POST w/ modified events. Server returns server_version++
+  Future<void> sync() async {
+    final newCategories = await services.client.readCategories();
+    final newTasks = await services.client.readTasks();
+    _merge(newCategories, categories);
+    _merge(newTasks, tasks);
+    _sortTasks();
+    lastUpdated = DateTime.now();
+    showSnackBar("Sync complete");
   }
 
   num _generateSortKey(Task task) => switch (_sortMode) {
@@ -43,24 +73,18 @@ class TasksModel extends DataModel {
   }
 
   void _showTaskUndoPrompt(Task task) {
-    final snackBar = SnackBar(
-      content: Text("Deleted $task"),
-      action: SnackBarAction(label: "Undo", onPressed: () => addTask(task)),
-    );
-    scaffoldKey.currentState?.showSnackBar(snackBar);
+    showSnackBar("Deleted $task", SnackBarAction(label: "Undo", onPressed: () => addTask(task)));
   }
 
   void _showCategoryUndoPrompt(Category category, List<Task> tasks) {
-    final snackBar = SnackBar(
-      content: Text("Deleted $category (${tasks.length} tasks)"),
-      action: SnackBarAction(label: "Undo", onPressed: () async {
-        await addCategory(category);
-        for (final task in tasks) {
-          await addTask(task);
-        }
-      },),
-    );
-    scaffoldKey.currentState?.showSnackBar(snackBar);
+    final message = "Deleted $category (${tasks.length} tasks)";
+    final action = SnackBarAction(label: "Undo", onPressed: () async {
+      await addCategory(category);
+      for (final task in tasks) {
+        await addTask(task);
+      }
+    },);
+    showSnackBar(message, action);
   }
 
   Iterable<Task> getTasksForCategory(Category category) =>

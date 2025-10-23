@@ -2,6 +2,7 @@ import "dart:convert";
 import "dart:io";
 
 import "package:path_provider/path_provider.dart";
+import "package:tasks/services.dart";
 import "package:url_launcher/url_launcher.dart";
 
 import "service.dart";
@@ -20,6 +21,7 @@ class DatabaseService extends BaseDatabase {
   late final Directory dir;
   File get tasksFile => File(dir / "tasks.json");
   File get categoriesFile => File(dir / "categories.json");
+  File get versionFile => File(dir / "version.json");
   final encoder = const JsonEncoder.withIndent("  ");
 
   @override
@@ -28,6 +30,9 @@ class DatabaseService extends BaseDatabase {
     await dir.create(recursive: true);
     await tasksFile.create();
     await categoriesFile.create();
+    await versionFile.create();
+    final version = (await versionFile.readAsString()).nullIfEmpty ?? "0";
+    services.client.version.value = int.parse(version);
   }
 
   Future<List<T>> _readJsonList<T>(File file, FromJson<T> fromJson) async {
@@ -74,4 +79,7 @@ class DatabaseService extends BaseDatabase {
     await tasksFile.copy(backupDir / "tasks.json");
     return backupDir;
   }
+
+  Future<void> saveVersion(int version) =>
+    versionFile.writeAsString(version.toString());
 }

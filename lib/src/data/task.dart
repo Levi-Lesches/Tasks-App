@@ -4,7 +4,7 @@ import "package:uuid/v4.dart";
 import "category.dart";
 import "utils.dart";
 
-extension type TaskID(String value) {
+extension type TaskID(String value) implements String {
   factory TaskID.unique() => TaskID(const UuidV4().generate());
   static TaskID? parse(String? id) => id == null ? null : TaskID(id);
 }
@@ -52,8 +52,8 @@ enum TaskStatus implements HasChip {
   String toString() => displayName;
 }
 
-class Task extends JsonSerializable {
-  final TaskID id;
+class Task extends JsonSerializable with Syncable {
+  @override final TaskID id;
   CategoryID categoryID;
   String title;
 

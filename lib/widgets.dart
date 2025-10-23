@@ -47,3 +47,8 @@ Widget propertyChip(HasChip property) => Chip(
   ),
   backgroundColor: property.color,
 );
+
+void showSnackBar(String text, [SnackBarAction? action]) {
+  final snackBar = SnackBar(content: Text(text), action: action);
+  scaffoldKey.currentState?.showSnackBar(snackBar);
+}

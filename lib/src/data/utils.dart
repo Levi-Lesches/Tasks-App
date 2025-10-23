@@ -25,6 +25,15 @@ extension ListUtils<E> on List<E> {
       yield (i, this[i]);
     }
   }
+
+  int? indexWhereOrNull(bool Function(E) predicate) {
+    final index = indexWhere(predicate);
+    if (index == -1) {
+      return null;
+    } else {
+      return index;
+    }
+  }
 }
 
 extension PathUtils on FileSystemEntity {
@@ -36,6 +45,12 @@ DateTime? parseDateTime(String? json) =>
 
 abstract class JsonSerializable {
   Json toJson();
+}
+
+mixin Syncable on JsonSerializable {
+  Object get id;
+  bool isModified = false;
+  int version = 0;
 }
 
 extension NullableUtils<T> on T? {
