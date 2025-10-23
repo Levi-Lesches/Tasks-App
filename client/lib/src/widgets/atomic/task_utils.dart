@@ -1,6 +1,6 @@
 import "package:flutter/material.dart";
 
-import "../../data/task.dart";
+import "package:shared/shared.dart";
 
 class ChipData {
   final Color? color;

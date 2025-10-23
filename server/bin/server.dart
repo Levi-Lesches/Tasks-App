@@ -7,8 +7,7 @@ import "package:shelf/shelf.dart";
 import "package:shelf/shelf_io.dart" as io;
 import "package:shelf_router/shelf_router.dart";
 
-import "package:tasks/data.dart";
-import "package:tasks/src/services/database.dart";
+import "package:shared/shared.dart";
 
 final database = DatabaseService(Directory("./data"));
 List<Task> tasks = [];

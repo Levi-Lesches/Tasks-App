@@ -7,8 +7,7 @@ import "package:path_provider/path_provider.dart";
 import "package:url_launcher/url_launcher.dart";
 
 import "package:tasks/data.dart";
-import "src/services/service.dart";
-import "src/services/database.dart";
+import "package:shared/shared.dart";
 import "src/services/client.dart";
 
 /// A [Service] that manages all other services used by the app.
