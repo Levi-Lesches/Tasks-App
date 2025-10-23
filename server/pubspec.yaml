@@ -2,14 +2,16 @@ name: server
 description: A sample command-line application.
 version: 1.0.0
 # repository: https://github.com/my_org/my_repo
+publish_to: none
 
 environment:
   sdk: ^3.9.2
 
 # Add regular dependencies here.
-resolution: workspace
+# resolution: workspace
 dependencies:
-  shared: ^1.0.0
+  shared:
+    path: ../shared
   shelf: ^1.4.2
   shelf_router: ^1.1.4
 
