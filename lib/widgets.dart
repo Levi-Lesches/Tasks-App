@@ -1,5 +1,4 @@
 import "package:flutter/material.dart";
-import "package:tasks/data.dart";
 
 export "package:go_router/go_router.dart";
 
@@ -26,27 +25,6 @@ extension ContextUtils on BuildContext {
 	/// Formats a time according to the user's locale.
 	String formatTime(DateTime time) => MaterialLocalizations.of(this).formatTimeOfDay(TimeOfDay.fromDateTime(time));
 }
-
-Color? _getTextColor(Color? backgroundColor) {
-  if (backgroundColor == null) return null;
-  final brightness = ThemeData.estimateBrightnessForColor(backgroundColor);
-  return switch (brightness) {
-    Brightness.dark => Colors.white,
-    Brightness.light => Colors.black,
-  };
-}
-
-Widget propertyChip(HasChip property) => Chip(
-  label: Text(
-    property.toString(),
-    style: TextStyle(color: _getTextColor(property.color)),
-  ),
-  avatar: Icon(
-    property.icon,
-    color: _getTextColor(property.color),
-  ),
-  backgroundColor: property.color,
-);
 
 void showSnackBar(String text, [SnackBarAction? action]) {
   final snackBar = SnackBar(content: Text(text), action: action);

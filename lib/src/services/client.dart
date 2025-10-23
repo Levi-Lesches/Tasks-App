@@ -1,6 +1,5 @@
 import "dart:convert";
 
-import "package:flutter/foundation.dart" show ValueNotifier;
 import "package:http/http.dart";
 import "package:tasks/data.dart";
 
@@ -20,7 +19,7 @@ class RemoteClient implements BaseDatabase {
   final client = Client();
 
   // to be updated by local database on init()
-  ValueNotifier<int> version = ValueNotifier(0);
+  int version = 0;
 
   @override
   Future<void> init() async { }
@@ -33,7 +32,9 @@ class RemoteClient implements BaseDatabase {
 
   Future<List<T>> _getJsonList<T>(Uri uri, FromJson<T> fromJson) async {
     final body = await _get(uri);
-    final jsonList = jsonDecode(body) as List;
+    final result = jsonDecode(body) as Json;
+    final jsonList = result["list"] as List;
+    version = result["version"];
     return [
       for (final json in jsonList.cast<Json>())
         fromJson(json),
@@ -49,7 +50,7 @@ class RemoteClient implements BaseDatabase {
     final body = jsonEncode(jsonList);
     final response = await client.post(uri, body: body);
     if (response.statusCode != 200) throw Exception("Bad response");
-    version.value = int.parse(response.body);
+    version = int.parse(response.body);
   }
 
   final _uri = Uri.parse("http://192.168.1.210:5001");

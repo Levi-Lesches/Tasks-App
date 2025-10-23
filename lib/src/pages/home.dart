@@ -38,7 +38,7 @@ class HomePage extends ReactiveWidget<HomeModel> {
         IconButton(
           icon: const Icon(Icons.open_in_new),
           tooltip: "Open data folder",
-          onPressed: services.database.openFolder,
+          onPressed: services.openFolder,
         ),
         IconButton(
           icon: const Icon(Icons.clear_all),

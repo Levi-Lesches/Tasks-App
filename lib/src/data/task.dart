@@ -1,4 +1,3 @@
-import "package:flutter/material.dart";
 import "package:uuid/v4.dart";
 
 import "category.dart";
@@ -9,22 +8,15 @@ extension type TaskID(String value) implements String {
   static TaskID? parse(String? id) => id == null ? null : TaskID(id);
 }
 
-abstract class HasChip {
-  Color? get color;
-  IconData get icon;
-}
+enum TaskPriority {
+  today("Today"),
+  asap("ASAP"),
+  high("High"),
+  normal("Normal"),
+  low("Low");
 
-enum TaskPriority implements HasChip {
-  today("Today", Icons.today, Colors.purple),
-  asap("ASAP", Icons.error, Colors.redAccent),
-  high("High", Icons.flag, Colors.orange),
-  normal("Normal", Icons.info, null),
-  low("Low", Icons.low_priority, Colors.blueGrey);
-
-  @override final IconData icon;
-  @override final Color? color;
   final String displayName;
-  const TaskPriority(this.displayName, this.icon, this.color);
+  const TaskPriority(this.displayName);
 
   factory TaskPriority.fromJson(String json) => values.byName(json);
   String toJson() => name;
@@ -33,17 +25,15 @@ enum TaskPriority implements HasChip {
   String toString() => displayName;
 }
 
-enum TaskStatus implements HasChip {
-  stuck("Stuck", Icons.error, Colors.red),
-  inProgress("In progress", Icons.timer, Colors.yellow),
-  todo("To-Do", Icons.info, null),
-  followUp("Waiting", Icons.person, Colors.blueGrey),
-  done("Done", Icons.done, Colors.green);
+enum TaskStatus {
+  stuck("Stuck"),
+  inProgress("In progress"),
+  todo("To-Do"),
+  followUp("Waiting"),
+  done("Done");
 
-  @override final IconData icon;
-  @override final Color? color;
   final String displayName;
-  const TaskStatus(this.displayName, this.icon, this.color);
+  const TaskStatus(this.displayName);
 
   factory TaskStatus.fromJson(String json) => values.byName(json);
   String toJson() => name;
@@ -52,7 +42,7 @@ enum TaskStatus implements HasChip {
   String toString() => displayName;
 }
 
-class Task extends JsonSerializable with Syncable {
+class Task extends Syncable {
   @override final TaskID id;
   CategoryID categoryID;
   String title;
@@ -73,6 +63,7 @@ class Task extends JsonSerializable with Syncable {
     priority = TaskPriority.normal,
     _status = TaskStatus.todo;
 
+  // ignore: use_super_parameters
   Task.fromJson(Json json) :
     id = TaskID(json["id"]),
     categoryID = CategoryID(json["categoryID"]),
@@ -83,7 +74,8 @@ class Task extends JsonSerializable with Syncable {
     _status = TaskStatus.fromJson(json["status"]),
     dueDate = parseDateTime(json["dueDate"]),
     startDate = parseDateTime(json["startDate"]),
-    doneDate = parseDateTime(json["doneDate"]);
+    doneDate = parseDateTime(json["doneDate"]),
+    super.fromJson(json);
 
   TaskStatus get status => _status;
   set status(TaskStatus value) {
@@ -105,6 +97,8 @@ class Task extends JsonSerializable with Syncable {
   @override
   Json toJson() => {
     "id": id.value,
+    "version": version,
+    "isModified": isModified,
     "categoryID": categoryID.value,
     "title": title,
     "description": description,

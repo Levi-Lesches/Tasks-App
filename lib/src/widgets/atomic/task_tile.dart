@@ -4,6 +4,29 @@ import "package:tasks/models.dart";
 import "package:tasks/pages.dart";
 import "package:tasks/widgets.dart";
 
+import "task_utils.dart";
+
+Color? _getTextColor(Color? backgroundColor) {
+  if (backgroundColor == null) return null;
+  final brightness = ThemeData.estimateBrightnessForColor(backgroundColor);
+  return switch (brightness) {
+    Brightness.dark => Colors.white,
+    Brightness.light => Colors.black,
+  };
+}
+
+Widget propertyChip(ChipData property) => Chip(
+  label: Text(
+    property.toString(),
+    style: TextStyle(color: _getTextColor(property.color)),
+  ),
+  avatar: Icon(
+    property.icon,
+    color: _getTextColor(property.color),
+  ),
+  backgroundColor: property.color,
+);
+
 class TaskTile extends StatefulWidget {
   final Task task;
   TaskTile(this.task) : super(key: ValueKey(task));
@@ -142,7 +165,7 @@ class _TaskTileState extends State<TaskTile> {
             width: 130,
             selectedValue: widget.task.status,
             allValues: TaskStatus.values,
-            builder: propertyChip,
+            builder: (value) => propertyChip(value.toChip()),
             onChanged: changeStatus,
           ),
         SizedBox(
@@ -153,7 +176,7 @@ class _TaskTileState extends State<TaskTile> {
           width: 112,
           selectedValue: widget.task.priority,
           allValues: TaskPriority.values,
-          builder: propertyChip,
+          builder: (value) => propertyChip(value.toChip()),
           onChanged: changePriority,
         ),
       ],

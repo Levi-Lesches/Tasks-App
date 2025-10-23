@@ -1,10 +1,6 @@
 import "dart:convert";
 import "dart:io";
 
-import "package:path_provider/path_provider.dart";
-import "package:tasks/services.dart";
-import "package:url_launcher/url_launcher.dart";
-
 import "service.dart";
 import "package:tasks/data.dart";
 
@@ -18,7 +14,9 @@ abstract class BaseDatabase extends Service {
 }
 
 class DatabaseService extends BaseDatabase {
-  late final Directory dir;
+  final Directory dir;
+  DatabaseService(this.dir);
+
   File get tasksFile => File(dir / "tasks.json");
   File get categoriesFile => File(dir / "categories.json");
   File get versionFile => File(dir / "version.json");
@@ -26,13 +24,10 @@ class DatabaseService extends BaseDatabase {
 
   @override
   Future<void> init() async {
-    dir = Directory(await getApplicationDocumentsDirectory() / "Tasks App");
     await dir.create(recursive: true);
     await tasksFile.create();
     await categoriesFile.create();
     await versionFile.create();
-    final version = (await versionFile.readAsString()).nullIfEmpty ?? "0";
-    services.client.version.value = int.parse(version);
   }
 
   Future<List<T>> _readJsonList<T>(File file, FromJson<T> fromJson) async {
@@ -67,10 +62,6 @@ class DatabaseService extends BaseDatabase {
   Future<void> writeTasks(List<Task> tasks) =>
     _writeJsonList(tasksFile, tasks);
 
-  void openFolder() {
-    launchUrl(dir.uri);
-  }
-
   Future<Directory> saveBackup() async {
     final now = DateTime.now();
     final backupDir = Directory(dir / "backups" / formatTimestamp(now));
@@ -82,4 +73,9 @@ class DatabaseService extends BaseDatabase {
 
   Future<void> saveVersion(int version) =>
     versionFile.writeAsString(version.toString());
+
+  Future<int> getVersion() async {
+    final contents = await versionFile.readAsString();
+    return contents.isEmpty ? 0 : int.parse(contents);
+  }
 }

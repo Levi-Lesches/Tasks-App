@@ -34,29 +34,14 @@ class TasksModel extends DataModel {
     await sync();
   }
 
-  void _merge<T extends Syncable>(List<T> updated, List<T> existing) {
-    for (final newValue in updated) {
-      final index = existing.indexWhereOrNull((value) => value.id == newValue.id);
-      if (index == null) {
-        existing.add(newValue);
-      } else {
-        final value = existing[index];
-        if (value.isModified) continue;  // do not override local changes
-        existing[index] = newValue;
-      }
-    }
-  }
-
   // Trinket works by first downloading, then uploading
   // Tasks have a modified flag on client, version flag on server
   // The server and client both have version numbers
   // Download: POST w/ client version. Server returns all tasks that have been updated since then + server_version
   // Upload: POST w/ modified events. Server returns server_version++
   Future<void> sync() async {
-    final newCategories = await services.client.readCategories();
-    final newTasks = await services.client.readTasks();
-    _merge(newCategories, categories);
-    _merge(newTasks, tasks);
+    categories.merge(await services.client.readCategories());
+    tasks.merge(await services.client.readTasks());
     _sortTasks();
     lastUpdated = DateTime.now();
     showSnackBar("Sync complete");

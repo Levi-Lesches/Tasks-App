@@ -8,7 +8,7 @@ extension type CategoryID(String value) implements String {
   static CategoryID? fromJson(String? json) => json == null ? null : CategoryID(json);
 }
 
-class Category extends JsonSerializable with Syncable {
+class Category extends Syncable {
   @override final CategoryID id;
   String title;
   String? description;
@@ -18,10 +18,12 @@ class Category extends JsonSerializable with Syncable {
     CategoryID? id,
   }) : id = id ?? CategoryID.unique();
 
+  // ignore: use_super_parameters
   Category.fromJson(Json json) :
     id = CategoryID(json["id"]),
     title = json["title"],
-    description = json["description"];
+    description = json["description"],
+    super.fromJson(json);
 
   @override
   Json toJson() => {
