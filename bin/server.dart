@@ -66,22 +66,23 @@ Response getTasks(Request request, int version) {
   return Response.ok(body);
 }
 
-Future<Response> postCategories(Request request) async {
+Future<Response> post<T extends Syncable>(
+  Request request,
+  FromJson<T> fromJson,
+  List<T> values,
+  Future<void> Function(List<T>) write,
+) async {
   final body = await request.readAsString();
-  final result = jsonToList(body, Category.fromJson);
-  final didChange = categories.merge(result);
+  final result = jsonToList(body, fromJson);
+  final didChange = values.merge(result);
   if (didChange) serverVersion++;
-  await database.writeCategories(categories);
+  await write(values);
   await database.saveVersion(serverVersion);
   return Response.ok(serverVersion.toString());
 }
 
-Future<Response> postTasks(Request request) async {
-  final body = await request.readAsString();
-  final result = jsonToList(body, Task.fromJson);
-  final didChange = tasks.merge(result);
-  if (didChange) serverVersion++;
-  await database.writeTasks(tasks);
-  await database.saveVersion(serverVersion);
-  return Response.ok(serverVersion.toString());
-}
+Future<Response> postCategories(Request request) =>
+  post(request, Category.fromJson, categories, database.writeCategories);
+
+Future<Response> postTasks(Request request) =>
+  post(request, Task.fromJson, tasks, database.writeTasks);
