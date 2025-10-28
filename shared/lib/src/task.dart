@@ -9,37 +9,25 @@ extension type TaskID(String value) implements String {
 }
 
 enum TaskPriority {
-  today("Today"),
-  asap("ASAP"),
-  high("High"),
-  normal("Normal"),
-  low("Low");
-
-  final String displayName;
-  const TaskPriority(this.displayName);
+  today,
+  asap,
+  high,
+  normal,
+  low;
 
   factory TaskPriority.fromJson(String json) => values.byName(json);
   String toJson() => name;
-
-  @override
-  String toString() => displayName;
 }
 
 enum TaskStatus {
-  stuck("Stuck"),
-  inProgress("In progress"),
-  todo("To-Do"),
-  followUp("Waiting"),
-  done("Done");
-
-  final String displayName;
-  const TaskStatus(this.displayName);
+  stuck,
+  inProgress,
+  todo,
+  followUp,
+  done;
 
   factory TaskStatus.fromJson(String json) => values.byName(json);
   String toJson() => name;
-
-  @override
-  String toString() => displayName;
 }
 
 class Task extends Syncable {
