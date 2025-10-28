@@ -1,5 +1,6 @@
 import "package:collection/collection.dart";
 import "package:flutter/material.dart";
+import "package:http/http.dart";
 import "package:tasks/data.dart";
 import "package:tasks/services.dart";
 import "package:tasks/widgets.dart";
@@ -40,11 +41,15 @@ class TasksModel extends DataModel {
   // Download: POST w/ client version. Server returns all tasks that have been updated since then + server_version
   // Upload: POST w/ modified events. Server returns server_version++
   Future<void> sync() async {
-    categories.merge(await services.client.readCategories());
-    tasks.merge(await services.client.readTasks());
-    _sortTasks();
-    lastUpdated = DateTime.now();
-    showSnackBar("Sync complete");
+    try {
+      categories.merge(await services.client.readCategories());
+      tasks.merge(await services.client.readTasks());
+      _sortTasks();
+      lastUpdated = DateTime.now();
+      showSnackBar("Sync complete");
+    } on ClientException {
+      return;  // server is not available, wait for later
+    }
   }
 
   num _generateSortKey(Task task) => switch (_sortMode) {

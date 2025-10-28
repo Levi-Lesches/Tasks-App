@@ -57,8 +57,8 @@ abstract class Syncable extends JsonSerializable {
   });
 
   Syncable.fromJson(Json json) :
-    isModified = json["isModified"],
-    version = json["version"];
+    isModified = json["isModified"] ?? false,
+    version = json["version"] ?? 1;
 }
 
 extension NullableUtils<T> on T? {

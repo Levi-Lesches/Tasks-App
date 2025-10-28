@@ -25,7 +25,9 @@ class RemoteClient implements BaseDatabase {
   Future<void> init() async { }
 
   Future<String> _get(Uri uri) async {
-    final response = await client.get(uri.replace(queryParameters: {"version": version}));
+    final queryParameters = <String, String>{"version": version.toString()};
+    final withVersion = uri.replace(queryParameters: queryParameters);
+    final response = await client.get(withVersion);
     if (response.statusCode != 200) throw Exception("Bad response");
     return response.body;
   }
