@@ -22,6 +22,14 @@ Task? getTask(GoRouterState state) {
   return models.tasks.byID(TaskID(taskID));
 }
 
+extension GoRouterUtils on GoRouter {
+  void openTaskPage(Task task) => pushNamed(
+    Routes.task,
+    extra: task,
+    pathParameters: {"id": task.id.value},
+  );
+}
+
 /// The router for the app.
 final router = GoRouter(
   initialLocation: Routes.home,

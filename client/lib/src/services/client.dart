@@ -55,7 +55,7 @@ class RemoteClient implements BaseDatabase {
     version = int.parse(response.body);
   }
 
-  final _uri = Uri.parse("http://192.168.1.210:5001");
+  final _uri = Uri.parse("http://10.198.104.24:5001");
 
   @override
   Future<List<Category>> readCategories() =>

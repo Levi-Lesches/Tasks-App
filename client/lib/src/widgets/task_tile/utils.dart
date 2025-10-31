@@ -31,3 +31,30 @@ extension TaskStatusUtils on TaskStatus {
     TaskStatus.done => const ChipData("Done", Icons.done, Colors.green),
   };
 }
+
+Color? _getTextColor(Color? backgroundColor) {
+  if (backgroundColor == null) return null;
+  final brightness = ThemeData.estimateBrightnessForColor(backgroundColor);
+  return switch (brightness) {
+    Brightness.dark => Colors.white,
+    Brightness.light => Colors.black,
+  };
+}
+
+Widget desktopChip(ChipData property) => Chip(
+  label: Text(
+    property.toString(),
+    style: TextStyle(color: _getTextColor(property.color)),
+  ),
+  avatar: Icon(
+    property.icon,
+    color: _getTextColor(property.color),
+  ),
+  backgroundColor: property.color,
+);
+
+Widget mobileChip(ChipData data) => Chip(
+  backgroundColor: data.color,
+  label: Text(data.name, style: TextStyle(color: _getTextColor(data.color))),
+  avatar: Icon(data.icon, color: _getTextColor(data.color)),
+);

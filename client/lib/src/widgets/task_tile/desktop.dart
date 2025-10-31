@@ -4,35 +4,14 @@ import "package:tasks/models.dart";
 import "package:tasks/pages.dart";
 import "package:tasks/widgets.dart";
 
-import "task_utils.dart";
+import "utils.dart";
 
-Color? _getTextColor(Color? backgroundColor) {
-  if (backgroundColor == null) return null;
-  final brightness = ThemeData.estimateBrightnessForColor(backgroundColor);
-  return switch (brightness) {
-    Brightness.dark => Colors.white,
-    Brightness.light => Colors.black,
-  };
-}
-
-Widget propertyChip(ChipData property) => Chip(
-  label: Text(
-    property.toString(),
-    style: TextStyle(color: _getTextColor(property.color)),
-  ),
-  avatar: Icon(
-    property.icon,
-    color: _getTextColor(property.color),
-  ),
-  backgroundColor: property.color,
-);
-
-class TaskTile extends StatefulWidget {
+class TaskTileDesktop extends StatefulWidget {
   final Task task;
-  TaskTile(this.task) : super(key: ValueKey(task));
+  TaskTileDesktop(this.task) : super(key: ValueKey(task));
 
   @override
-  State<TaskTile> createState() => _TaskTileState();
+  State<TaskTileDesktop> createState() => _TaskTileState();
 }
 
 enum _EditState {
@@ -40,7 +19,7 @@ enum _EditState {
   description,
 }
 
-class _TaskTileState extends State<TaskTile> {
+class _TaskTileState extends State<TaskTileDesktop> {
   final controller = TextEditingController();
   final focus = FocusNode();
   bool isHovering = false;
@@ -113,21 +92,21 @@ class _TaskTileState extends State<TaskTile> {
                   _EditState.description => "Description",
                   null => "",
                 },
-              ) : Text(widget.task.title),
+              ) : Text(widget.task.title, maxLines: 1, overflow: TextOverflow.ellipsis,),
             subtitle: widget.task.bodyText == null ? null : Text(widget.task.bodyText!),
             isThreeLine: widget.task.isThreeLine,
             leading: IconButton(
               icon: const Icon(Icons.delete),
               onPressed: () => models.tasks.deleteTask(widget.task),
             ),
-          ),
-        ),
-        IconButton(
-          icon: const Icon(Icons.edit),
-          onPressed: () => router.pushNamed(
-            Routes.task,
-            extra: widget.task,
-            pathParameters: {"id": widget.task.id.value},
+            trailing: IconButton(
+              icon: const Icon(Icons.edit),
+              onPressed: () => router.pushNamed(
+                Routes.task,
+                extra: widget.task,
+                pathParameters: {"id": widget.task.id.value},
+              ),
+            ),
           ),
         ),
         SizedBox(
@@ -165,7 +144,7 @@ class _TaskTileState extends State<TaskTile> {
             width: 130,
             selectedValue: widget.task.status,
             allValues: TaskStatus.values,
-            builder: (value) => propertyChip(value.toChip()),
+            builder: (value) => desktopChip(value.toChip()),
             onChanged: changeStatus,
           ),
         SizedBox(
@@ -176,7 +155,7 @@ class _TaskTileState extends State<TaskTile> {
           width: 112,
           selectedValue: widget.task.priority,
           allValues: TaskPriority.values,
-          builder: (value) => propertyChip(value.toChip()),
+          builder: (value) => desktopChip(value.toChip()),
           onChanged: changePriority,
         ),
       ],
