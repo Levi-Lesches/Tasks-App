@@ -2,7 +2,7 @@ import "package:flutter/material.dart";
 
 export "package:go_router/go_router.dart";
 
-export "src/widgets/task_tile/adaptive.dart";
+export "src/widgets/task_tile/desktop.dart";
 
 export "src/widgets/generic/menu_picker.dart";
 export "src/widgets/generic/text_field.dart";

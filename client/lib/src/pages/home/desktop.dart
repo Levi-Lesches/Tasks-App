@@ -17,14 +17,15 @@ class HomePageDesktop extends ReactiveWidget<HomeModel> {
 
   @override
   Widget build(BuildContext context, HomeModel model) => ResponsiveSidebar(
+    key: model.appBarKey,
     sidebar: Sidebar(
       title: "My Lists",
       items: [
         for (final category in model.categories)
-            NavigationDestination(
-              label: category.title,
-              icon: iconChip(models.tasks.priorityForCategory(category).toChip()),
-            ),
+          NavigationDestination(
+            label: category.title,
+            icon: iconChip(models.tasks.priorityForCategory(category).toChip()),
+          ),
         ],
       onSelected: model.selectCategory,
       selectedIndex: model.categoryIndex,
@@ -42,7 +43,9 @@ class HomePageDesktop extends ReactiveWidget<HomeModel> {
           ),
       ),
     ),
-    appBar: AppBar(
+    appBar: (leading) => AppBar(
+      leading: leading,
+      key: model.appBarKey,
       title: const Text("Tasks"),
       actions: [
         IconButton(

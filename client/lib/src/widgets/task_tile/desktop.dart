@@ -6,15 +6,15 @@ import "package:tasks/widgets.dart";
 
 import "utils.dart";
 
-class TaskTileDesktop extends StatefulWidget {
+class TaskTile extends StatefulWidget {
   final Task task;
-  TaskTileDesktop(this.task) : super(key: ValueKey(task));
+  TaskTile(this.task) : super(key: ValueKey(task));
 
   @override
-  State<TaskTileDesktop> createState() => _TaskTileState();
+  State<TaskTile> createState() => _TaskTileState();
 }
 
-class _TaskTileState extends State<TaskTileDesktop> {
+class _TaskTileState extends State<TaskTile> {
   bool isHovering = false;
   late final taskEditor = TextEditor(onEdit);
 

@@ -1,3 +1,4 @@
+import "package:flutter/material.dart";
 import "package:tasks/data.dart";
 import "package:tasks/models.dart";
 import "package:tasks/widgets.dart";
@@ -6,6 +7,8 @@ import "view_model.dart";
 
 /// The view model for the home page.
 class HomeModel extends ViewModel {
+  final appBarKey = UniqueKey();
+
   late final categoryEditor = TextEditor(models.tasks.createCategory);
   late final taskEditor = TextEditor(createTask);
   late final titleEditor = TextEditor(updateTitle);
