@@ -49,6 +49,11 @@ class HomePageDesktop extends ReactiveWidget<HomeModel> {
       title: const Text("Tasks"),
       actions: [
         IconButton(
+          icon: const Icon(Icons.sync),
+          tooltip: "Sync",
+          onPressed: models.tasks.sync,
+        ),
+        IconButton(
           icon: const Icon(Icons.delete),
           tooltip: "Delete list",
           onPressed: model.deleteCategory,

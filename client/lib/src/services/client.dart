@@ -1,3 +1,4 @@
+import "dart:async";
 import "dart:convert";
 
 import "package:http/http.dart";
@@ -27,9 +28,13 @@ class RemoteClient implements BaseDatabase {
   Future<String> _get(Uri uri) async {
     final queryParameters = <String, String>{"version": version.toString()};
     final withVersion = uri.replace(queryParameters: queryParameters);
-    final response = await client.get(withVersion);
-    if (response.statusCode != 200) throw Exception("Bad response");
-    return response.body;
+    try {
+      final response = await client.get(withVersion).timeout(const Duration(seconds: 3));
+      if (response.statusCode != 200) throw Exception("Bad response");
+      return response.body;
+    } on TimeoutException {
+      throw ClientException("Sync timed out");
+    }
   }
 
   Future<List<T>> _getJsonList<T>(Uri uri, FromJson<T> fromJson) async {

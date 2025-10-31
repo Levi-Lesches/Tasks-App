@@ -31,6 +31,6 @@ extension ContextUtils on BuildContext {
 }
 
 void showSnackBar(String text, [SnackBarAction? action]) {
-  final snackBar = SnackBar(content: Text(text), action: action);
+  final snackBar = SnackBar(content: Text(text), action: action, showCloseIcon: true,);
   scaffoldKey.currentState?.showSnackBar(snackBar);
 }

@@ -43,6 +43,8 @@ class TasksModel extends DataModel {
       categories.merge(await services.client.readCategories());
       categories.removeWhere((c) => c.id == doneCategory.id);
       tasks.merge(await services.client.readTasks());
+      await saveCategories();
+      await saveTasks();
       _sortTasks();
       lastUpdated = DateTime.now();
       showSnackBar("Sync complete");

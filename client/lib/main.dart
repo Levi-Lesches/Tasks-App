@@ -1,4 +1,7 @@
+import "dart:io";
+
 import "package:flutter/material.dart";
+import "package:flutter/services.dart";
 
 import "package:tasks/models.dart";
 import "package:tasks/pages.dart";
@@ -7,6 +10,12 @@ import "package:tasks/widgets.dart";
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  if (Platform.isAndroid) {
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+  }
   await services.init();
   await models.init();
   await models.initFromOthers();

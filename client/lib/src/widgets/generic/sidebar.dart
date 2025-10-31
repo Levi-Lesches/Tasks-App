@@ -1,3 +1,5 @@
+import "dart:io";
+
 import "package:flutter/material.dart";
 import "package:tasks/widgets.dart";
 
@@ -26,11 +28,11 @@ class Sidebar {
         onDestinationSelected: onSelected,
         selectedIndex: selectedIndex,
         children: [
-                DrawerHeader(
-        child: Center(
-          child: Text(title, style: context.textTheme.headlineMedium),
-        ),
-      ),
+          DrawerHeader(
+            child: Center(
+              child: Text(title, style: context.textTheme.headlineMedium),
+            ),
+          ),
           leading ?? Container(),
           const SizedBox(height: 12),
           for (final item in items)
@@ -86,7 +88,7 @@ class ResponsiveSidebar extends StatefulWidget {
 }
 
 class _ResponsiveSidebarState extends State<ResponsiveSidebar> {
-  static double expandedWidth = 200;
+  static double expandedWidth = Platform.isAndroid ? 250 : 200;
   bool isOpen = true;
   final key = UniqueKey();
   double get width => isOpen ? expandedWidth : 0;

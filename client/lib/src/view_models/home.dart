@@ -25,10 +25,15 @@ class HomeModel extends ViewModel {
     taskEditor.addListener(notifyListeners);
     titleEditor.addListener(notifyListeners);
     descriptionEditor.addListener(notifyListeners);
-    onUpdate();
+    await onUpdate();
   }
 
-  void onUpdate() {
+  Future<void> onUpdate() async {
+    if (categories.isEmpty) {
+      await models.tasks.createCategory("New Category");
+      selectCategory(0);
+      return;
+    }
     tasks = models.tasks.getTasksForCategory(category).toList();
     finishedTasks = models.tasks.getTasksForCategory(category, done: true).toList();
     notifyListeners();
@@ -62,7 +67,7 @@ class HomeModel extends ViewModel {
     }
     await models.tasks.deleteCategory(category);
     categoryIndex = 0;
-    onUpdate();
+    await onUpdate();
     notifyListeners();
   }
 }
