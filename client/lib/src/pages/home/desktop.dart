@@ -15,10 +15,6 @@ class HomePageDesktop extends ReactiveWidget<HomeModel> {
   Widget header(BuildContext context, String text) =>
     Text(text, style: context.textTheme.headlineSmall, textAlign: TextAlign.center);
 
-  TextStyle? descriptionStyle(BuildContext context) =>
-    context.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w300);
-
-
   @override
   Widget build(BuildContext context, HomeModel model) => ResponsiveSidebar(
     sidebar: Sidebar(
@@ -99,22 +95,21 @@ class HomePageDesktop extends ReactiveWidget<HomeModel> {
           child: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             children: [
-              Text(model.category.title, style: context.textTheme.displaySmall),
+              ToggleTextField(
+                editor: model.titleEditor,
+                hint: "Enter a title",
+                getValue: () => model.category.title,
+                style: context.textTheme.displaySmall,
+              ),
+
               const SizedBox(height: 8),
-              if (!model.descriptionEditor.isEditing)
-                InkWell(
-                  onTap: () => model.descriptionEditor.startEditing(model.category.description ?? ""),
-                  child: Text(
-                    model.category.description ?? "Enter a description...",
-                    style: descriptionStyle(context),
-                  ),
-                )
-              else
-                CreateTextField(
-                  editor: model.descriptionEditor,
-                  hint: "Enter a description...",
-                  style: descriptionStyle(context),
-                ),
+
+              ToggleTextField(
+                editor: model.descriptionEditor,
+                hint: "Enter a description",
+                getValue: () => model.category.description,
+                style: context.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w300),
+              ),
 
               const SizedBox(height: 16),
 

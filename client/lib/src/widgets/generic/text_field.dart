@@ -22,7 +22,8 @@ class TextEditor {
     onCancel?.call();
   }
 
-  void submit(String value) {
+  void submit([String? value]) {
+    value ??= controller.text;
     focusNode.unfocus();
     isEditing = false;
     onSubmit(value);
@@ -33,6 +34,31 @@ class TextEditor {
     controller.text = text ?? "";
     focusNode.requestFocus();
   }
+}
+
+class ToggleTextField extends StatelessWidget {
+  final String hint;
+  final TextEditor editor;
+  final TextStyle? style;
+  final String? Function() getValue;
+
+  const ToggleTextField({
+    required this.editor,
+    required this.hint,
+    required this.getValue,
+    this.style,
+  });
+
+  @override
+  Widget build(BuildContext context) => editor.isEditing
+    ? CreateTextField(
+      editor: editor,
+      hint: hint,
+      style: style,
+    ) : InkWell(
+      onTap: () => editor.startEditing(getValue()),
+      child: Text(getValue() ?? hint, style: style),
+    );
 }
 
 class CreateTextField extends StatelessWidget {

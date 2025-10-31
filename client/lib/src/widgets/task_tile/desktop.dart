@@ -14,16 +14,9 @@ class TaskTileDesktop extends StatefulWidget {
   State<TaskTileDesktop> createState() => _TaskTileState();
 }
 
-enum _EditState {
-  title,
-  description,
-}
-
 class _TaskTileState extends State<TaskTileDesktop> {
   bool isHovering = false;
-  _EditState? editState;
-  late final originalCategory = models.tasks.getCategory(widget.task.originalCategoryID);
-  late final taskEditor = TextEditor(onEdit, onCancel: cancel);
+  late final taskEditor = TextEditor(onEdit);
 
   Future<void> changePriority(TaskPriority priority) async {
     widget.task.priority = priority;
@@ -36,32 +29,12 @@ class _TaskTileState extends State<TaskTileDesktop> {
   }
 
   Future<void> onEdit(String value) async {
-    final oldTitle = widget.task.title;
-    switch (editState) {
-      case _EditState.title: widget.task.title = value.trim();
-      case _EditState.description: widget.task.description = value.trim().nullIfEmpty;
-      case null:
-    }
-    if (widget.task.title.isEmpty) {
-      widget.task.title = oldTitle;  // used in UI confirmation
-      await models.tasks.deleteTask(widget.task);
+    if (value.trim().isEmpty) {
+      return models.tasks.deleteTask(widget.task);
     } else {
+      widget.task.title = value.trim();
       await models.tasks.saveTasks();
     }
-  }
-
-  void editTitle() {
-    taskEditor.controller.text = widget.task.title;
-    setState(() => editState = _EditState.title);
-  }
-
-  void editDescription() {
-    taskEditor.controller.text = widget.task.description ?? "";
-    setState(() => editState = _EditState.description);
-  }
-
-  void cancel() {
-    setState(() => editState = null);
   }
 
   Future<void> changeDueDate() async {
@@ -82,15 +55,11 @@ class _TaskTileState extends State<TaskTileDesktop> {
         Expanded(
           child: ListTile(
             visualDensity: const VisualDensity(vertical: -4, horizontal: -4),
-            onTap: editTitle,
-            title: editState != null
+            onTap: () => taskEditor.startEditing(widget.task.title),
+            title: taskEditor.isEditing
               ? CreateTextField(
                 editor: taskEditor,
-                hint: switch (editState) {
-                  _EditState.title => "New Task",
-                  _EditState.description => "Description",
-                  null => "",
-                },
+                hint: "New Task",
               ) : oneLine(widget.task.title),
             subtitle: widget.task.bodyText == null
               ? null : oneLine(widget.task.bodyText!),

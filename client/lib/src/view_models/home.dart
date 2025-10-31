@@ -8,6 +8,7 @@ import "view_model.dart";
 class HomeModel extends ViewModel {
   late final categoryEditor = TextEditor(models.tasks.createCategory);
   late final taskEditor = TextEditor(createTask);
+  late final titleEditor = TextEditor(updateTitle);
   late final descriptionEditor = TextEditor(updateDescription);
 
   List<Category> get categories => models.tasks.categories;
@@ -19,7 +20,9 @@ class HomeModel extends ViewModel {
     models.tasks.addListener(onUpdate);
     categoryEditor.addListener(notifyListeners);
     taskEditor.addListener(notifyListeners);
+    titleEditor.addListener(notifyListeners);
     descriptionEditor.addListener(notifyListeners);
+    onUpdate();
   }
 
   void onUpdate() {
@@ -37,6 +40,12 @@ class HomeModel extends ViewModel {
 
   void updateDescription(String value) {
     category.description = value.nullIfEmpty;
+    models.tasks.saveCategories();
+  }
+
+  void updateTitle(String value) {
+    if (value.trim().isEmpty) return;
+    category.title = value;
     models.tasks.saveCategories();
   }
 
