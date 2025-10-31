@@ -1,22 +1,50 @@
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 
-class CreateTextField extends StatelessWidget {
-  final VoidCallback onCancel;
+class TextEditor {
+  final focusNode = FocusNode();
+  final controller = TextEditingController();
+
+  final _isEditing = ValueNotifier(false);
+  bool get isEditing => _isEditing.value;
+  set isEditing(bool value) => _isEditing.value = value;
+  void addListener(VoidCallback callback) => _isEditing.addListener(callback);
+  void dispose() => _isEditing.dispose();
+
   final ValueChanged<String> onSubmit;
+  final VoidCallback? onCancel;
+  TextEditor(this.onSubmit, {this.onCancel});
+
+  void cancel() {
+    isEditing = false;
+    focusNode.unfocus();
+    controller.clear();
+    onCancel?.call();
+  }
+
+  void submit(String value) {
+    focusNode.unfocus();
+    isEditing = false;
+    onSubmit(value);
+  }
+
+  void startEditing(String? text) {
+    isEditing = true;
+    controller.text = text ?? "";
+    focusNode.requestFocus();
+  }
+}
+
+class CreateTextField extends StatelessWidget {
   final String? hint;
-  final TextEditingController controller;
-  final FocusNode? focusNode;
+  final TextEditor editor;
   final TextStyle? style;
   final bool multiline;
   final bool rounded;
 
   const CreateTextField({
-    required this.onCancel,
-    required this.onSubmit,
-    required this.controller,
+    required this.editor,
     this.hint,
-    this.focusNode,
     this.style,
     this.multiline = false,
     this.rounded = false,
@@ -24,17 +52,17 @@ class CreateTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Focus(
-    onFocusChange: (value) { if (!value) onCancel(); },
+    onFocusChange: (value) { if (!value) editor.cancel(); },
     onKeyEvent: (node, event) {
       // Call's onCancel() if the key is ESC, otherwise let the TextField handle it
-      if (event.logicalKey == LogicalKeyboardKey.escape) { onCancel(); }
+      if (event.logicalKey == LogicalKeyboardKey.escape) editor.cancel();
       return KeyEventResult.ignored;
     },
     child: TextField(
-      focusNode: focusNode,
-      controller: controller,
+      focusNode: editor.focusNode,
+      controller: editor.controller,
+      onSubmitted: editor.submit,
       autofocus: true,
-      onSubmitted: onSubmit,
       style: style,
       maxLines: multiline ? null : 1,
       decoration: InputDecoration(

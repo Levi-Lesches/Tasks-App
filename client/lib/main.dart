@@ -24,6 +24,18 @@ class TasksApp extends StatelessWidget {
     scaffoldMessengerKey: scaffoldKey,
     theme: ThemeData(
       useMaterial3: true,
+      visualDensity: const VisualDensity(horizontal: -4, vertical: -2),  // Desktop
+      navigationRailTheme: NavigationRailThemeData(
+        elevation: 8,
+        indicatorColor: Colors.blueGrey.withAlpha(75),
+        minWidth: 48,
+      ),
+      navigationDrawerTheme: NavigationDrawerThemeData(
+        elevation: 8,
+        tileHeight: 48,
+        labelTextStyle: WidgetStatePropertyAll(context.textTheme.bodyMedium),
+        indicatorColor: Colors.blueGrey.withAlpha(75),
+      ),
     ),
     routerConfig: router,
     debugShowCheckedModeBanner: false,

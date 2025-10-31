@@ -11,5 +11,5 @@ class TaskTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-    isMobile ? TaskTileMobile(task) : TaskTileDesktop(task);
+    context.isMobile ? TaskTileMobile(task) : TaskTileDesktop(task);
 }

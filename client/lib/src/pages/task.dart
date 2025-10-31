@@ -7,20 +7,12 @@ import "package:tasks/widgets.dart";
 
 class TaskViewModel extends ViewModel {
   final Task task;
-  final titleController = TextEditingController();
-  final descriptionController = TextEditingController();
-  final descriptionFocus = FocusNode();
+  late final titleEditor = TextEditor(changeTitle);
+  late final descriptionEditor = TextEditor(changeDescription);
 
   TaskViewModel(this.task) {
-    descriptionController.text = task.description ?? "";
-  }
-
-  bool isEditingTitle = false;
-  bool isEditingDescription = true;
-
-  void onCancelTitle() {
-    isEditingTitle = false;
-    notifyListeners();
+    titleEditor.addListener(notifyListeners);
+    descriptionEditor.addListener(notifyListeners);
   }
 
   void changeTitle(String value) {
@@ -29,25 +21,10 @@ class TaskViewModel extends ViewModel {
     notifyListeners();
   }
 
-  void editTitle() {
-    titleController.text = task.title.trim();
-    isEditingTitle = true;
-    notifyListeners();
-  }
-
   Future<void> changeDescription([String? value]) async {
-    value ??= descriptionController.text;
+    value ??= descriptionEditor.controller.text;
     task.description = value.trim().nullIfEmpty;
     await models.tasks.saveTasks();
-    notifyListeners();
-    isEditingDescription = false;
-    descriptionFocus.unfocus();
-  }
-
-  void editDescription() {
-    descriptionController.text = task.description ?? "";
-    isEditingDescription = true;
-    descriptionFocus.requestFocus();
     notifyListeners();
   }
 }
@@ -71,18 +48,16 @@ class TaskPage extends ReactiveWidget<TaskViewModel> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (model.isEditingTitle)
+                if (model.titleEditor.isEditing)
                   CreateTextField(
-                    onCancel: model.onCancelTitle,
-                    onSubmit: model.changeTitle,
-                    controller: model.titleController,
+                    editor: model.titleEditor,
                     style: context.textTheme.headlineMedium,
                   )
                 else
                   ListTile(
                     title: Text(task.title),
                     titleTextStyle: context.textTheme.headlineMedium,
-                    onTap: model.editTitle,
+                    onTap: () => model.titleEditor.startEditing(task.title),
                     contentPadding: EdgeInsets.zero,
                     trailing: const Icon(Icons.edit),
                   ),
@@ -90,7 +65,7 @@ class TaskPage extends ReactiveWidget<TaskViewModel> {
                 const Divider(),
                 const SizedBox(height: 12),
 
-                if (model.isEditingDescription)
+                if (model.descriptionEditor.isEditing)
                   TextButton.icon(
                     label: const Text("Save"),
                     icon: const Icon(Icons.save),
@@ -99,13 +74,13 @@ class TaskPage extends ReactiveWidget<TaskViewModel> {
                 else
                   TextButton.icon(
                     label: const Text("Edit description"),
-                    onPressed: model.editDescription,
+                    onPressed: () => model.descriptionEditor.startEditing(task.description),
                     icon: const Icon(Icons.edit),
                   ),
                 const SizedBox(height: 12),
 
 
-                if (model.isEditingDescription) Shortcuts(
+                if (model.descriptionEditor.isEditing) Shortcuts(
                   shortcuts: {
                     LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.enter):
                       const ActivateIntent(),
@@ -115,22 +90,21 @@ class TaskPage extends ReactiveWidget<TaskViewModel> {
                     child: SizedBox(
                       height: 500,
                       child: TextField(
-                        controller: model.descriptionController,
+                        controller: model.descriptionEditor.controller,
                         decoration: const InputDecoration(
                           hintText: "Description",
                           labelText: "Description",
                           border: OutlineInputBorder(),
                         ),
                         maxLines: null,
-                        focusNode: model.descriptionFocus,
-                        // style: context.textTheme.headlineMedium,
+                        focusNode: model.descriptionEditor.focusNode,
                       ),
                     ),
                   ),
                 )
                 else
                   InkWell(
-                    onTap: model.editDescription,
+                    onTap: () => model.descriptionEditor.startEditing(task.description),
                     child: Text(
                       task.description ?? "No Description",
                       textAlign: TextAlign.start,

@@ -58,3 +58,10 @@ Widget mobileChip(ChipData data) => Chip(
   label: Text(data.name, style: TextStyle(color: _getTextColor(data.color))),
   avatar: Icon(data.icon, color: _getTextColor(data.color)),
 );
+
+Widget iconChip(ChipData data) => Chip(
+  backgroundColor: data.color,
+  label: const Text(""),
+  labelPadding: EdgeInsets.zero,
+  avatar: Icon(data.icon, color: _getTextColor(data.color)),
+);

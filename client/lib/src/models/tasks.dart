@@ -1,3 +1,5 @@
+import "dart:math";
+
 import "package:collection/collection.dart";
 import "package:flutter/material.dart";
 import "package:http/http.dart";
@@ -26,12 +28,8 @@ class TasksModel extends DataModel {
   @override
   Future<void> init() async {
     categories = await services.database.readCategories();
+    categories.removeWhere((c) => c.id == doneCategory.id);
     tasks = await services.database.readTasks();
-    if (!categories.contains(doneCategory)) {
-      doneCategory.isModified = true;
-      categories.add(doneCategory);
-      await saveCategories();
-    }
     await sync();
   }
 
@@ -43,6 +41,7 @@ class TasksModel extends DataModel {
   Future<void> sync() async {
     try {
       categories.merge(await services.client.readCategories());
+      categories.removeWhere((c) => c.id == doneCategory.id);
       tasks.merge(await services.client.readTasks());
       _sortTasks();
       lastUpdated = DateTime.now();
@@ -77,8 +76,10 @@ class TasksModel extends DataModel {
     showSnackBar(message, action);
   }
 
-  Iterable<Task> getTasksForCategory(Category category) =>
-    tasks.where((task) => task.categoryID == category.id);
+  Iterable<Task> getTasksForCategory(Category category, {bool done = false}) =>
+    tasks
+      .where((task) => task.categoryID == category.id)
+      .where((task) => (task.status == TaskStatus.done) == done);
 
   Iterable<Task> tasksWithPriority(TaskPriority priority) =>
     tasks.where((task) => task.priority == priority);
@@ -110,21 +111,6 @@ class TasksModel extends DataModel {
     await saveTasks();
   }
 
-  Future<void> clearFinishedTasks() async {
-    for (final task in tasks) {
-      if (task.status != TaskStatus.done) continue;
-      task.originalCategoryID = task.categoryID;
-      task.categoryID = doneCategory.id;
-    }
-    await saveTasks();
-  }
-
-  Future<void> restoreTask(Task task) async {
-    task.categoryID = task.originalCategoryID!;
-    task.originalCategoryID = null;
-    await saveTasks();
-  }
-
   Category? getCategory(CategoryID? id) =>
     categories.firstWhereOrNull((category) => category.id == id);
 
@@ -149,5 +135,14 @@ class TasksModel extends DataModel {
   Future<void> addCategory(Category category) async {
     categories.add(category);
     await saveCategories();
+  }
+
+  TaskPriority priorityForCategory(Category category) {
+    final tasks = getTasksForCategory(category);
+    if (tasks.isEmpty) return TaskPriority.normal;
+    final index = tasks
+      .map((task) => task.priority.index)
+      .reduce(min);
+    return TaskPriority.values[index];
   }
 }

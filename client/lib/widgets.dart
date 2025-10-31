@@ -1,5 +1,3 @@
-import "dart:io";
-
 import "package:flutter/material.dart";
 
 export "package:go_router/go_router.dart";
@@ -9,11 +7,10 @@ export "src/widgets/task_tile/adaptive.dart";
 
 export "src/widgets/generic/menu_picker.dart";
 export "src/widgets/generic/text_field.dart";
+export "src/widgets/generic/sidebar.dart";
 export "src/widgets/generic/reactive_widget.dart";
 
 final scaffoldKey = GlobalKey<ScaffoldMessengerState>();
-
-bool isMobile = Platform.isAndroid;
 
 Text oneLine(String text) => Text(text, maxLines: 1, overflow: TextOverflow.ellipsis);
 
@@ -30,6 +27,8 @@ extension ContextUtils on BuildContext {
 
 	/// Formats a time according to the user's locale.
 	String formatTime(DateTime time) => MaterialLocalizations.of(this).formatTimeOfDay(TimeOfDay.fromDateTime(time));
+
+  bool get isMobile => MediaQuery.sizeOf(this).width < 1000;
 }
 
 void showSnackBar(String text, [SnackBarAction? action]) {

@@ -20,11 +20,10 @@ enum _EditState {
 }
 
 class _TaskTileState extends State<TaskTileDesktop> {
-  final controller = TextEditingController();
-  final focus = FocusNode();
   bool isHovering = false;
   _EditState? editState;
   late final originalCategory = models.tasks.getCategory(widget.task.originalCategoryID);
+  late final taskEditor = TextEditor(onEdit, onCancel: cancel);
 
   Future<void> changePriority(TaskPriority priority) async {
     widget.task.priority = priority;
@@ -37,27 +36,32 @@ class _TaskTileState extends State<TaskTileDesktop> {
   }
 
   Future<void> onEdit(String value) async {
+    final oldTitle = widget.task.title;
     switch (editState) {
-      case _EditState.title: widget.task.title = value;
-      case _EditState.description: widget.task.description = value.nullIfEmpty;
+      case _EditState.title: widget.task.title = value.trim();
+      case _EditState.description: widget.task.description = value.trim().nullIfEmpty;
       case null:
     }
-    await models.tasks.saveTasks();
-  }
-
-  void cancelEdit() {
-    focus.unfocus();
-    setState(() => editState = null);
+    if (widget.task.title.isEmpty) {
+      widget.task.title = oldTitle;  // used in UI confirmation
+      await models.tasks.deleteTask(widget.task);
+    } else {
+      await models.tasks.saveTasks();
+    }
   }
 
   void editTitle() {
-    controller.text = widget.task.title;
+    taskEditor.controller.text = widget.task.title;
     setState(() => editState = _EditState.title);
   }
 
   void editDescription() {
-    controller.text = widget.task.description ?? "";
+    taskEditor.controller.text = widget.task.description ?? "";
     setState(() => editState = _EditState.description);
+  }
+
+  void cancel() {
+    setState(() => editState = null);
   }
 
   Future<void> changeDueDate() async {
@@ -69,8 +73,6 @@ class _TaskTileState extends State<TaskTileDesktop> {
     await models.tasks.saveTasks();
   }
 
-  Future<void> restore() => models.tasks.restoreTask(widget.task);
-
   @override
   Widget build(BuildContext context) => MouseRegion(
     onEnter: (event) => setState(() => isHovering = true),
@@ -81,19 +83,17 @@ class _TaskTileState extends State<TaskTileDesktop> {
           child: ListTile(
             visualDensity: const VisualDensity(vertical: -4, horizontal: -4),
             onTap: editTitle,
-            focusNode: focus,
             title: editState != null
               ? CreateTextField(
-                controller: controller,
-                onCancel: cancelEdit,
-                onSubmit: onEdit,
+                editor: taskEditor,
                 hint: switch (editState) {
                   _EditState.title => "New Task",
                   _EditState.description => "Description",
                   null => "",
                 },
-              ) : Text(widget.task.title, maxLines: 1, overflow: TextOverflow.ellipsis,),
-            subtitle: widget.task.bodyText == null ? null : Text(widget.task.bodyText!),
+              ) : oneLine(widget.task.title),
+            subtitle: widget.task.bodyText == null
+              ? null : oneLine(widget.task.bodyText!),
             isThreeLine: widget.task.isThreeLine,
             leading: IconButton(
               icon: const Icon(Icons.delete),
@@ -113,40 +113,13 @@ class _TaskTileState extends State<TaskTileDesktop> {
           height: widget.task.bodyText == null ? 40 : 60,
           child: const VerticalDivider(),
         ),
-        SizedBox(
-          width: 100,
-          child: TextButton(
-            onPressed: changeDueDate,
-            child: widget.task.dueDate == null
-              ? const Text("--")
-              : Text(formatDate(widget.task.dueDate!)),
-          ),
+        MenuPicker(
+          width: 130,
+          selectedValue: widget.task.status,
+          allValues: TaskStatus.values,
+          builder: (value) => desktopChip(value.toChip()),
+          onChanged: changeStatus,
         ),
-        SizedBox(
-          height: widget.task.bodyText == null ? 40 : 60,
-          child: const VerticalDivider(),
-        ),
-        if (widget.task.categoryID == doneCategory.id)
-          if (originalCategory != null) SizedBox(
-            width: 130,
-            child: Tooltip(
-              message: "Restore to ${originalCategory!.title}",
-              child: TextButton(
-                onPressed: restore,
-                child: Text(originalCategory?.title ?? "N/A", maxLines: 1, overflow: TextOverflow.ellipsis),
-              ),
-            ),
-          )
-          else
-            const Text("--")
-        else
-          MenuPicker(
-            width: 130,
-            selectedValue: widget.task.status,
-            allValues: TaskStatus.values,
-            builder: (value) => desktopChip(value.toChip()),
-            onChanged: changeStatus,
-          ),
         SizedBox(
           height: widget.task.bodyText == null ? 40 : 60,
           child: const VerticalDivider(),
