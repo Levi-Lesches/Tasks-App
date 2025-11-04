@@ -5,6 +5,7 @@ export "package:go_router/go_router.dart";
 
 import "src/pages/home/desktop.dart";
 import "src/pages/task.dart";
+import "src/pages/splash.dart";
 
 /// Contains all the routes for this app.
 class Routes {
@@ -12,6 +13,7 @@ class Routes {
   static const home = "/";
 
   static const task = "/tasks";
+  static const splash = "/splash";
 }
 
 Task? getTask(GoRouterState state) {
@@ -32,8 +34,13 @@ extension GoRouterUtils on GoRouter {
 
 /// The router for the app.
 final router = GoRouter(
-  initialLocation: Routes.home,
+  initialLocation: Routes.splash,
   routes: [
+    GoRoute(
+      path: Routes.splash,
+      name: Routes.splash,
+      builder: (context, state) => SplashPage(),
+    ),
     GoRoute(
       path: Routes.home,
       name: Routes.home,

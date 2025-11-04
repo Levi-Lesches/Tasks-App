@@ -1,6 +1,8 @@
 import "dart:async";
 import "dart:convert";
+import "dart:io";
 
+import "package:flutter/foundation.dart" show ValueNotifier;
 import "package:http/http.dart";
 import "package:tasks/data.dart";
 
@@ -20,17 +22,30 @@ class RemoteClient implements BaseDatabase {
   final client = Client();
 
   // to be updated by local database on init()
-  int version = 0;
+  final versionNotifier = ValueNotifier(0);
+  int get version => versionNotifier.value;
+  set version(int value) => versionNotifier.value = value;
+
+  (InternetAddress, ServerType)? server;
+  InternetAddress? get serverAddress => server?.$1;
+  ServerType? get serverType => server?.$2;
+  bool get isReady => server != null;
+  void onLostConnection() => server = null;
 
   @override
-  Future<void> init() async { }
+  Future<void> init() async {
+    final broadcaster = BroadcastClient();
+    await broadcaster.init();
+    server = await broadcaster.broadcast();
+    broadcaster.dispose();
+  }
 
   Future<String> _get(Uri uri) async {
     final queryParameters = <String, String>{"version": version.toString()};
     final withVersion = uri.replace(queryParameters: queryParameters);
     try {
       final response = await client.get(withVersion).timeout(const Duration(seconds: 3));
-      if (response.statusCode != 200) throw Exception("Bad response");
+      if (response.statusCode != 200) throw Exception("Bad response: ${response.statusCode}");
       return response.body;
     } on TimeoutException {
       throw ClientException("Sync timed out");
@@ -58,9 +73,12 @@ class RemoteClient implements BaseDatabase {
     final response = await client.post(uri, body: body);
     if (response.statusCode != 200) throw Exception("Bad response");
     version = int.parse(response.body);
+    for (final element in elements) {
+      element.version = version;
+    }
   }
 
-  final _uri = Uri.parse("http://10.198.104.24:5001");
+  Uri get _uri => Uri.parse("http://${serverAddress?.address}:5001");
 
   @override
   Future<List<Category>> readCategories() =>
@@ -77,4 +95,9 @@ class RemoteClient implements BaseDatabase {
   @override
   Future<void> writeTasks(List<Task> tasks) =>
     _postJsonList(_uri.resolve("/tasks"), tasks);
+
+  Future<int> getServerVersion() async {
+    final response = await _get(_uri.resolve("/version"));
+    return int.tryParse(response) ?? 0;
+  }
 }

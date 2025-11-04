@@ -47,20 +47,6 @@ abstract class JsonSerializable {
   Json toJson();
 }
 
-abstract class Syncable extends JsonSerializable {
-  Object get id;
-  bool isModified;
-  int version;
-  Syncable({
-    this.isModified = false,
-    this.version = 0,
-  });
-
-  Syncable.fromJson(Json json) :
-    isModified = json["isModified"] ?? false,
-    version = json["version"] ?? 1;
-}
-
 extension NullableUtils<T> on T? {
   R? ifNotNull<R>(R Function(T) func) {
     final self = this;
@@ -75,23 +61,3 @@ extension StringUtils on String {
 
 String formatDate(DateTime date) => "${date.month}/${date.day}/${date.year}";
 String formatTimestamp(DateTime dt) => "${dt.year}-${dt.month}-${dt.day}-${dt.hour}-${dt.minute}-${dt.second}";
-
-extension SyncUtils<E extends Syncable> on List<E> {
-  bool merge(List<E> updated) {
-    var didChange = false;
-    for (final newValue in updated) {
-      newValue.isModified = false;
-      final index = indexWhereOrNull((value) => value.id == newValue.id);
-      if (index == null) {
-        didChange = true;
-        add(newValue);
-      } else {
-        final value = this[index];
-        if (value.isModified || value.version >= newValue.version) continue;  // do not override local changes
-        didChange = true;
-        this[index] = newValue;
-      }
-    }
-    return didChange;
-  }
-}

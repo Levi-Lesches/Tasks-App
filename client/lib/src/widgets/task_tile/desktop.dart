@@ -23,11 +23,13 @@ class TaskTileViewModel extends ViewModel {
 
   Future<void> changePriority(TaskPriority priority) async {
     task.priority = priority;
+    task.modified();
     await models.tasks.saveTasks();
   }
 
   Future<void> changeStatus(TaskStatus status) async {
     task.status = status;
+    task.modified();
     await models.tasks.saveTasks();
   }
 
@@ -36,6 +38,7 @@ class TaskTileViewModel extends ViewModel {
       return models.tasks.deleteTask(task);
     } else {
       task.title = value.trim();
+      task.modified();
       await models.tasks.saveTasks();
     }
   }
@@ -46,11 +49,21 @@ class TaskTileViewModel extends ViewModel {
     final result = await showDatePicker(context: context, firstDate: now, lastDate: year);
     if (result == null) return;
     task.dueDate = result;
+    task.modified();
     await models.tasks.saveTasks();
   }
 }
 
 class TaskTile extends ReactiveWidget<TaskTileViewModel> {
+  static double statusWidth(BuildContext context) =>
+    context.isMobile ? 48 : 130;
+
+  static double priorityWidth(BuildContext context) =>
+    context.isMobile ? 48 : 112;
+
+  static Widget adaptiveChip(BuildContext context, ChipData data) =>
+    context.isMobile ? iconChip(data) : desktopChip(data);
+
   final Task task;
   TaskTile(this.task) : super(key: ValueKey(task));
 
@@ -76,6 +89,7 @@ class TaskTile extends ReactiveWidget<TaskTileViewModel> {
             icon: const Icon(Icons.delete),
             onPressed: () => models.tasks.deleteTask(task),
           ),
+          contentPadding: EdgeInsets.zero,
           trailing: IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () => router.pushNamed(
@@ -91,10 +105,10 @@ class TaskTile extends ReactiveWidget<TaskTileViewModel> {
         child: const VerticalDivider(),
       ),
       MenuPicker(
-        width: 130,
+        width: statusWidth(context),
         selectedValue: task.status,
         allValues: TaskStatus.values,
-        builder: (value) => desktopChip(value.toChip()),
+        builder: (value) => adaptiveChip(context, value.toChip()),
         onChanged: model.changeStatus,
       ),
       SizedBox(
@@ -102,10 +116,10 @@ class TaskTile extends ReactiveWidget<TaskTileViewModel> {
         child: const VerticalDivider(),
       ),
       MenuPicker(
-        width: 112,
+        width: priorityWidth(context),
         selectedValue: task.priority,
         allValues: TaskPriority.values,
-        builder: (value) => desktopChip(value.toChip()),
+        builder: (value) => adaptiveChip(context, value.toChip()),
         onChanged: model.changePriority,
       ),
     ],

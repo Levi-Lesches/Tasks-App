@@ -17,6 +17,7 @@ class TaskViewModel extends ViewModel {
 
   void changeTitle(String value) {
     task.title = value;
+    task.modified();
     models.tasks.saveTasks();
     notifyListeners();
   }
@@ -24,6 +25,7 @@ class TaskViewModel extends ViewModel {
   Future<void> changeDescription([String? value]) async {
     value ??= descriptionEditor.controller.text;
     task.description = value.trim().nullIfEmpty;
+    task.modified();
     await models.tasks.saveTasks();
     notifyListeners();
   }

@@ -41,19 +41,7 @@ Color? _getTextColor(Color? backgroundColor) {
   };
 }
 
-Widget desktopChip(ChipData property) => Chip(
-  label: Text(
-    property.toString(),
-    style: TextStyle(color: _getTextColor(property.color)),
-  ),
-  avatar: Icon(
-    property.icon,
-    color: _getTextColor(property.color),
-  ),
-  backgroundColor: property.color,
-);
-
-Widget mobileChip(ChipData data) => Chip(
+Widget desktopChip(ChipData data) => Chip(
   backgroundColor: data.color,
   label: Text(data.name, style: TextStyle(color: _getTextColor(data.color))),
   avatar: Icon(data.icon, color: _getTextColor(data.color)),

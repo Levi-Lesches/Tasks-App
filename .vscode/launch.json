@@ -5,11 +5,10 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "client",
+      "name": "Tasks",
       "cwd": "client",
       "request": "launch",
-      "type": "dart",
-      // "deviceId": "28181FDH200GUQ"
+      "type": "dart"
     },
   ]
 }

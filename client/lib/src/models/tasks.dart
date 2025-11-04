@@ -39,17 +39,36 @@ class TasksModel extends DataModel {
   // Download: POST w/ client version. Server returns all tasks that have been updated since then + server_version
   // Upload: POST w/ modified events. Server returns server_version++
   Future<void> sync() async {
+    if (!services.client.isReady) {
+      await services.client.init();
+      if (!services.client.isReady) {
+        return showSnackBar("No servers found");
+      }
+    }
     try {
-      categories.merge(await services.client.readCategories());
+      var didChange = false;
+      didChange |= categories.merge(await services.client.readCategories());
       categories.removeWhere((c) => c.id == doneCategory.id);
-      tasks.merge(await services.client.readTasks());
+      didChange |= tasks.merge(await services.client.readTasks());
       await saveCategories();
       await saveTasks();
       _sortTasks();
+
+      await services.client.writeTasks(tasks);
+      await services.client.writeCategories(categories);
+
       lastUpdated = DateTime.now();
-      showSnackBar("Sync complete");
+      if (didChange) {
+        showSnackBar("Tasks synced to ${services.client.serverType?.name}");
+      } else {
+        showSnackBar("No changes");
+      }
     } on ClientException {
+      showSnackBar("Could not reach server");
+      services.client.onLostConnection();
       return;  // server is not available, wait for later
+    } on Exception catch (error) {
+      showSnackBar("Error with sync: $error");
     }
   }
 
@@ -64,27 +83,31 @@ class TasksModel extends DataModel {
   }
 
   void _showTaskUndoPrompt(Task task) {
-    showSnackBar("Deleted $task", SnackBarAction(label: "Undo", onPressed: () => addTask(task)));
+    showSnackBar("Deleted $task", SnackBarAction(label: "Undo", onPressed: () => task.modified()));
   }
 
   void _showCategoryUndoPrompt(Category category, List<Task> tasks) {
     final message = "Deleted $category (${tasks.length} tasks)";
-    final action = SnackBarAction(label: "Undo", onPressed: () async {
-      await addCategory(category);
-      for (final task in tasks) {
-        await addTask(task);
-      }
-    },);
+    final action = SnackBarAction(
+      label: "Undo",
+      onPressed: () async {
+        category.modified();
+        for (final task in tasks) {
+          task.modified();
+        }
+      },
+    );
     showSnackBar(message, action);
   }
 
-  Iterable<Task> getTasksForCategory(Category category, {bool done = false}) =>
-    tasks
-      .where((task) => task.categoryID == category.id)
-      .where((task) => (task.status == TaskStatus.done) == done);
+  Iterable<Task> getTasksForCategory(Category category, {bool done = false}) => tasks
+    .where((task) => task.categoryID == category.id)
+    .where((task) => (task.status == TaskStatus.done) == done)
+    .where((task) => !task.isDeleted);
 
-  Iterable<Task> tasksWithPriority(TaskPriority priority) =>
-    tasks.where((task) => task.priority == priority);
+  Iterable<Task> tasksWithPriority(TaskPriority priority) => tasks
+    .where((task) => task.priority == priority)
+    .where((task) => !task.isDeleted);
 
   Future<Category> createCategory(String title) async {
     final category = Category(title: title);
@@ -103,30 +126,28 @@ class TasksModel extends DataModel {
   }
 
   Future<void> deleteTask(Task task) async {
-    tasks.remove(task);
+    task.deleted();
     await saveTasks();
     _showTaskUndoPrompt(task);
   }
 
   Future<void> addTask(Task task) async {
+    task.modified();
     tasks.add(task);
     await saveTasks();
   }
 
-  Category? getCategory(CategoryID? id) =>
-    categories.firstWhereOrNull((category) => category.id == id);
-
   Task? byID(TaskID taskID) => tasks.firstWhereOrNull((task) => task.id == taskID);
 
   Future<void> deleteCategory(Category category) async {
-    final queue = [...getTasksForCategory(category)];
-    for (final task in queue) {
-      tasks.remove(task);
+    final categoryTasks = getTasksForCategory(category).toList();
+    for (final task in categoryTasks) {
+      task.deleted();
     }
-    categories.remove(category);
+    category.deleted();
     await saveTasks();
     await saveCategories();
-    _showCategoryUndoPrompt(category, queue);
+    _showCategoryUndoPrompt(category, categoryTasks);
   }
 
   Future<void> saveCategories() async {

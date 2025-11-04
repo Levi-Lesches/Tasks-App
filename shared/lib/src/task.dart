@@ -2,6 +2,7 @@ import "package:uuid/v4.dart";
 
 import "category.dart";
 import "utils.dart";
+import "syncable.dart";
 
 extension type TaskID(String value) implements String {
   factory TaskID.unique() => TaskID(const UuidV4().generate());
@@ -84,9 +85,7 @@ class Task extends Syncable {
 
   @override
   Json toJson() => {
-    "id": id.value,
-    "version": version,
-    "isModified": isModified,
+    ...super.toJson(),
     "categoryID": categoryID.value,
     "title": title,
     "description": description,

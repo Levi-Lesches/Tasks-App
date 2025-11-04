@@ -46,7 +46,21 @@ class HomePageDesktop extends ReactiveWidget<HomeModel> {
     appBar: (leading) => AppBar(
       leading: leading,
       key: model.appBarKey,
-      title: const Text("Tasks"),
+      title: ValueListenableBuilder(
+        valueListenable: services.client.versionNotifier,
+        builder: (context, value, child) => Row(
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          children: [
+            const Text("Tasks"),
+            const SizedBox(width: 12),
+            if (value == 0)
+              Text("(Not synced)", style: context.textTheme.labelMedium)
+            else
+              Text("(v$value)", style: context.textTheme.labelMedium),
+          ],
+        ),
+      ),
       actions: [
         IconButton(
           icon: const Icon(Icons.sync),
@@ -124,10 +138,28 @@ class HomePageDesktop extends ReactiveWidget<HomeModel> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Expanded(child: Center(child: Text("Title", style: context.textTheme.titleMedium))),
-                  SizedBox(width: 130, child: Text("Status", textAlign: TextAlign.center, style: context.textTheme.titleMedium)),
+                  Expanded(
+                    child: Center(
+                      child: Text("Title", style: context.titleStyle),
+                    ),
+                  ),
+                  SizedBox(
+                    width: TaskTile.statusWidth(context),
+                    child: Text(
+                      "Status",
+                      textAlign: TextAlign.center,
+                      style: context.textTheme.titleSmall,
+                    ),
+                  ),
                   const SizedBox(width: 16),
-                  SizedBox(width: 112, child: Text("Priority", textAlign: TextAlign.center, style: context.textTheme.titleMedium)),
+                  SizedBox(
+                    width: TaskTile.priorityWidth(context),
+                    child: Text(
+                      "Priority",
+                      textAlign: TextAlign.center,
+                      style: context.titleStyle,
+                    ),
+                  ),
                 ],
               ),
               const Divider(),

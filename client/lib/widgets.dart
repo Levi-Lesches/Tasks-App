@@ -28,6 +28,8 @@ extension ContextUtils on BuildContext {
 	String formatTime(DateTime time) => MaterialLocalizations.of(this).formatTimeOfDay(TimeOfDay.fromDateTime(time));
 
   bool get isMobile => MediaQuery.sizeOf(this).width < 1000;
+
+  TextStyle? get titleStyle => isMobile ? textTheme.titleSmall : textTheme.titleMedium;
 }
 
 void showSnackBar(String text, [SnackBarAction? action]) {

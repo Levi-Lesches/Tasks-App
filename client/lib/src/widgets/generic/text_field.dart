@@ -1,7 +1,7 @@
-import "dart:io";
-
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
+
+import "package:tasks/widgets.dart";
 
 class TextEditor {
   final focusNode = FocusNode();
@@ -90,7 +90,7 @@ class CreateTextField extends StatelessWidget {
       focusNode: editor.focusNode,
       controller: editor.controller,
       onSubmitted: editor.submit,
-      autofocus: !Platform.isAndroid,
+      autofocus: !context.isMobile,
       style: style,
       maxLines: multiline ? null : 1,
       decoration: InputDecoration(

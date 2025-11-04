@@ -9,7 +9,9 @@ import "package:shelf_router/shelf_router.dart";
 
 import "package:shared/shared.dart";
 
-final database = DatabaseService(Directory("./data"));
+// final database = DatabaseService(Directory("./data"));
+final dir = Platform.isLinux ? "./data" : r"C:\Users\Levi\Documents\Tasks App";
+final database = DatabaseService(Directory(dir));
 List<Task> tasks = [];
 List<Category> categories = [];
 int serverVersion = 0;
@@ -25,8 +27,14 @@ void main() async {
   router.post("/categories", postCategories);
   router.get("/tasks", parseVersion(getTasks));
   router.post("/tasks", postTasks);
+  router.get("/version", getVersion);
   await io.serve(router.call, "0.0.0.0", 5001);
   print("Listening on port 5001");
+
+  final serverType = Platform.isLinux ? ServerType.server : ServerType.pc;
+  final broadcastServer = BroadcastServer(serverType);
+  await broadcastServer.init();
+  print("Listening for broadcasts on port 5002");
 }
 
 Handler parseVersion(Response Function(Request, int) handler) => (request) {
@@ -62,7 +70,6 @@ Response getCategories(Request request, int version) {
 Response getTasks(Request request, int version) {
   final result = tasks.where((value) => value.version > version);
   final body = listToJson(result);
-  print(body);
   return Response.ok(body);
 }
 
@@ -75,7 +82,12 @@ Future<Response> post<T extends Syncable>(
   final body = await request.readAsString();
   final result = jsonToList(body, fromJson);
   final didChange = values.merge(result);
-  if (didChange) serverVersion++;
+  if (didChange) {
+    serverVersion++;
+    for (final element in result) {
+      element.version = serverVersion;
+    }
+  }
   await write(values);
   await database.saveVersion(serverVersion);
   return Response.ok(serverVersion.toString());
@@ -86,3 +98,6 @@ Future<Response> postCategories(Request request) =>
 
 Future<Response> postTasks(Request request) =>
   post(request, Task.fromJson, tasks, database.writeTasks);
+
+Future<Response> getVersion(Request request) async =>
+  Response.ok(serverVersion.toString());

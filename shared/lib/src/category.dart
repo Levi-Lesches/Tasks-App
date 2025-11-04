@@ -1,6 +1,7 @@
 import "package:uuid/v4.dart";
 
 import "utils.dart";
+import "syncable.dart";
 
 extension type CategoryID(String value) implements String {
   factory CategoryID.unique() => CategoryID(const UuidV4().generate());
@@ -27,7 +28,7 @@ class Category extends Syncable {
 
   @override
   Json toJson() => {
-    "id": id,
+    ...super.toJson(),
     "title": title,
     "description": description,
   };
