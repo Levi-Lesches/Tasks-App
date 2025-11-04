@@ -52,7 +52,7 @@ class TaskTileViewModel extends ViewModel {
 
 class TaskTile extends ReactiveWidget<TaskTileViewModel> {
   final Task task;
-  const TaskTile(this.task);
+  TaskTile(this.task) : super(key: ValueKey(task));
 
   @override
   TaskTileViewModel createModel() => TaskTileViewModel(task);

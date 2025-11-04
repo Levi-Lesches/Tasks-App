@@ -62,6 +62,7 @@ Response getCategories(Request request, int version) {
 Response getTasks(Request request, int version) {
   final result = tasks.where((value) => value.version > version);
   final body = listToJson(result);
+  print(body);
   return Response.ok(body);
 }
 

@@ -32,7 +32,7 @@ msix_config:
   display_name: Tasks
   publisher_display_name: Levi Lesches
   identity_name: dev.levi.tasks
-  msix_version: 1.0.0.0
+  msix_version: 1.0.0.1
   logo_path: icon.png
 
 flutter_launcher_icons:
