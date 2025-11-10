@@ -2,7 +2,6 @@ import "dart:math";
 
 import "package:collection/collection.dart";
 import "package:flutter/material.dart";
-import "package:http/http.dart";
 import "package:tasks/data.dart";
 import "package:tasks/services.dart";
 import "package:tasks/widgets.dart";
@@ -20,6 +19,7 @@ class TasksModel extends DataModel {
   SortMode _sortMode = SortMode.priorityStatus;
   DateTime lastUpdated = DateTime.now();
   SortMode get sortMode => _sortMode;
+  int get version => services.client.version;
   set sortMode(SortMode mode) {
     _sortMode = mode;
     _sortTasks();
@@ -30,7 +30,7 @@ class TasksModel extends DataModel {
     categories = await services.database.readCategories();
     categories.removeWhere((c) => c.id == doneCategory.id);
     tasks = await services.database.readTasks();
-    await sync();
+    sync().ignore();
   }
 
   // Trinket works by first downloading, then uploading
@@ -39,36 +39,17 @@ class TasksModel extends DataModel {
   // Download: POST w/ client version. Server returns all tasks that have been updated since then + server_version
   // Upload: POST w/ modified events. Server returns server_version++
   Future<void> sync() async {
-    if (!services.client.isReady) {
-      await services.client.init();
-      if (!services.client.isReady) {
-        return showSnackBar("No servers found");
-      }
-    }
     try {
-      var didChange = false;
-      didChange |= categories.merge(await services.client.readCategories());
-      categories.removeWhere((c) => c.id == doneCategory.id);
-      didChange |= tasks.merge(await services.client.readTasks());
-      await saveCategories();
-      await saveTasks();
-      _sortTasks();
-
-      await services.client.writeTasks(tasks);
-      await services.client.writeCategories(categories);
-
-      lastUpdated = DateTime.now();
+      final didChange = await services.client.sync();
       if (didChange) {
-        showSnackBar("Tasks synced to ${services.client.serverType?.name}");
+        showSnackBar("Synced tasks to server");
+        _sortTasks();
+        notifyListeners();
       } else {
-        showSnackBar("No changes");
+        showSnackBar("No changes to sync");
       }
-    } on ClientException {
-      showSnackBar("Could not reach server");
-      services.client.onLostConnection();
-      return;  // server is not available, wait for later
-    } on Exception catch (error) {
-      showSnackBar("Error with sync: $error");
+    } on SyncException catch (error) {
+      showSnackBar("Could not sync: $error");
     }
   }
 

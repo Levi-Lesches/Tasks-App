@@ -4,11 +4,11 @@ library;
 import "dart:io";
 
 import "package:path_provider/path_provider.dart";
+import "package:tasks/src/services/server.dart";
 import "package:url_launcher/url_launcher.dart";
 
 import "package:tasks/data.dart";
 import "package:shared/shared.dart";
-import "src/services/client.dart";
 
 /// A [Service] that manages all other services used by the app.
 class Services extends Service {
@@ -17,7 +17,7 @@ class Services extends Service {
 
   // Define your services here
   late final DatabaseService database;
-  final client = RemoteClient();
+  late final client = TasksClient(server: HttpTasksServer(), database: database);
 
 	/// The different services to initialize, in this order.
 	List<Service> get services => [database, client];

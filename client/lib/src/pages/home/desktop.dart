@@ -46,20 +46,17 @@ class HomePageDesktop extends ReactiveWidget<HomeModel> {
     appBar: (leading) => AppBar(
       leading: leading,
       key: model.appBarKey,
-      title: ValueListenableBuilder(
-        valueListenable: services.client.versionNotifier,
-        builder: (context, value, child) => Row(
-          crossAxisAlignment: CrossAxisAlignment.baseline,
-          textBaseline: TextBaseline.alphabetic,
-          children: [
-            const Text("Tasks"),
-            const SizedBox(width: 12),
-            if (value == 0)
-              Text("(Not synced)", style: context.textTheme.labelMedium)
-            else
-              Text("(v$value)", style: context.textTheme.labelMedium),
-          ],
-        ),
+      title: Row(
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
+        children: [
+          const Text("Tasks"),
+          const SizedBox(width: 12),
+          if (models.tasks.version == 0)
+            Text("(Not synced)", style: context.textTheme.labelMedium)
+          else
+            Text("(v${models.tasks.version})", style: context.textTheme.labelMedium),
+        ],
       ),
       actions: [
         IconButton(

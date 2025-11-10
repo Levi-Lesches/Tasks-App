@@ -47,6 +47,7 @@ class Task extends Syncable {
   Task({
     required this.categoryID,
     required this.title,
+    super.version,
   }) :
     id = TaskID.unique(),
     priority = TaskPriority.normal,

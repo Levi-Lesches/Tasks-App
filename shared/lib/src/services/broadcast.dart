@@ -18,6 +18,8 @@ enum ServerType {
   phone,
 }
 
+typedef FoundServer = ({InternetAddress address, ServerType type});
+
 Future<Iterable<InternetAddress>> getAllAddresses() async =>
   (await NetworkInterface.list(type: InternetAddressType.IPv4))
   .expand((interface) => interface.addresses);
@@ -65,7 +67,7 @@ class BroadcastClient {
     socket.listen(onData);
   }
 
-  Future<(InternetAddress, ServerType)?> broadcast() async {
+  Future<FoundServer?> broadcast() async {
     servers = [];
     final buffer = Uint8List.fromList(requestString.codeUnits);
     for (final address in await getAllAddresses()) {
@@ -75,14 +77,14 @@ class BroadcastClient {
     const delay = Duration(milliseconds: 3000);
     await Future<void>.delayed(delay);
     final result = ServerType.values.map(  // choose highest priority server
-      (serverType) => servers.firstWhereOrNull((tuple) => serverType == tuple.$2))
+      (serverType) => servers.firstWhereOrNull((tuple) => serverType == tuple.type))
       .firstWhereOrNull((tuple) => tuple != null);
     return result;
   }
 
   void dispose() => socket.close();
 
-  List<(InternetAddress, ServerType)> servers = [];
+  List<FoundServer> servers = [];
 
   Future<void> onData(RawSocketEvent event) async {
     final datagram = socket.receive();
@@ -94,6 +96,6 @@ class BroadcastClient {
     final result = InternetAddress(ip);
     final type = ServerType.values[int.parse(index)];
     if (allAddresses.contains(result)) return;
-    servers.add( (result, type) );
+    servers.add( (address: result, type: type) );
   }
 }

@@ -47,6 +47,13 @@ abstract class JsonSerializable {
   Json toJson();
 }
 
+extension JsonSerializableListUtils<T extends JsonSerializable> on Iterable<T> {
+  Iterable<Json> toJson() => map((item) => item.toJson());
+  List<T> copyAll(FromJson<T> fromJson) => map((item) => fromJson(item.toJson())).toList();
+}
+
+typedef FromJson<T> = T Function(Json);
+
 extension NullableUtils<T> on T? {
   R? ifNotNull<R>(R Function(T) func) {
     final self = this;
@@ -57,6 +64,11 @@ extension NullableUtils<T> on T? {
 extension StringUtils on String {
   String? get nullIfEmpty => isEmpty ? null : this;
   String operator /(String other) => "$this/$other";
+}
+
+extension JsonUtils on Json {
+  Iterable<E> toList<E>(String key, FromJson<E> fromJson) =>
+    (this[key] as List).cast<Json>().map(fromJson);
 }
 
 String formatDate(DateTime date) => "${date.month}/${date.day}/${date.year}";

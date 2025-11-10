@@ -26,7 +26,7 @@ abstract class Syncable extends JsonSerializable {
 }
 
 extension SyncUtils<E extends Syncable> on List<E> {
-  bool merge(List<E> updated) {
+  bool merge(Iterable<E> updated) {
     var didChange = false;
     for (final newValue in updated) {
       final index = indexWhereOrNull((value) => value.id == newValue.id);
@@ -35,7 +35,7 @@ extension SyncUtils<E extends Syncable> on List<E> {
         add(newValue);
       } else {
         final value = this[index];
-        if (newValue.version > value.version) {
+        if (newValue.isModified || newValue.version > value.version) {
           didChange = true;
           this[index] = newValue;
         }
@@ -43,4 +43,7 @@ extension SyncUtils<E extends Syncable> on List<E> {
     }
     return didChange;
   }
+
+  Iterable<E> newerThan(int version) => where((item) => item.version > version);
+  Iterable<E> get allModified => where((item) => item.isModified);
 }

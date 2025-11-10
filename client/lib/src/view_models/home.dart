@@ -14,7 +14,8 @@ class HomeModel extends ViewModel {
   late final titleEditor = TextEditor(updateTitle);
   late final descriptionEditor = TextEditor(updateDescription);
 
-  List<Category> get categories => models.tasks.categories;
+  List<Category> get categories => models.tasks.categories
+    .where((c) => !c.isDeleted).toList();
   int categoryIndex = 0;
   Category get category => categories[categoryIndex];
 
