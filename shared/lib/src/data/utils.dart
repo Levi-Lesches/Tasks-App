@@ -48,7 +48,7 @@ abstract class JsonSerializable {
 }
 
 extension JsonSerializableListUtils<T extends JsonSerializable> on Iterable<T> {
-  Iterable<Json> toJson() => map((item) => item.toJson());
+  List<Json> toJson() => map((item) => item.toJson()).toList();
   List<T> copyAll(FromJson<T> fromJson) => map((item) => fromJson(item.toJson())).toList();
 }
 
@@ -67,8 +67,8 @@ extension StringUtils on String {
 }
 
 extension JsonUtils on Json {
-  Iterable<E> toList<E>(String key, FromJson<E> fromJson) =>
-    (this[key] as List).cast<Json>().map(fromJson);
+  List<E> toList<E>(String key, FromJson<E> fromJson) =>
+    (this[key] as List).cast<Json>().map(fromJson).toList();
 }
 
 String formatDate(DateTime date) => "${date.month}/${date.day}/${date.year}";

@@ -17,10 +17,11 @@ class Services extends Service {
 
   // Define your services here
   late final DatabaseService database;
-  late final client = TasksClient(server: HttpTasksServer(), database: database);
+  late final httpClient = HttpTasksServer();
+  late final client = TasksClient(server: httpClient, database: database);
 
 	/// The different services to initialize, in this order.
-	List<Service> get services => [database, client];
+	List<Service> get services => [database, httpClient, client];
 
 	@override
 	Future<void> init() async {
@@ -30,7 +31,6 @@ class Services extends Service {
 		for (final service in services) {
       await service.init();
     }
-    client.version = await database.getVersion();
 	}
 
   void openFolder() => launchUrl(database.dir.uri);

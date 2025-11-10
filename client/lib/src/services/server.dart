@@ -36,7 +36,7 @@ class HttpTasksServer extends Service implements TasksServer {
   }
 
   Future<Json> _get(Uri uri) => _request(() => client.get(uri));
-  Future<Json> _post(Uri uri, Json body) => _request(() => client.post(uri, body: body));
+  Future<Json> _post(Uri uri, Json body) => _request(() => client.post(uri, body: jsonEncode(body)));
 
   @override
   Future<ServerResponse> download(int version) async {

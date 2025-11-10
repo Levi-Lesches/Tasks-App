@@ -12,22 +12,15 @@ import "package:shared/shared.dart";
 // final database = DatabaseService(Directory("./data"));
 final dir = Platform.isLinux ? "./data" : r"C:\Users\Levi\Documents\Tasks App";
 final database = DatabaseService(Directory(dir));
-List<Task> tasks = [];
-List<Category> categories = [];
-int serverVersion = 0;
+final server = HostedTasksServer(database: database);
 
 void main() async {
   await database.init();
-  categories = await database.readCategories();
-  tasks = await database.readTasks();
-  serverVersion = await database.getVersion();
+  await server.init();
 
   final router = Router();
-  router.get("/categories", parseVersion(getCategories));
-  router.post("/categories", postCategories);
-  router.get("/tasks", parseVersion(getTasks));
-  router.post("/tasks", postTasks);
-  router.get("/version", getVersion);
+  router.get("/download", parseVersion(download));
+  router.post("/upload", upload);
   await io.serve(router.call, "0.0.0.0", 5001);
   print("Listening on port 5001");
 
@@ -37,7 +30,7 @@ void main() async {
   print("Listening for broadcasts on port 5002");
 }
 
-Handler parseVersion(Response Function(Request, int) handler) => (request) {
+Handler parseVersion(Future<Response> Function(Request, int) handler) => (request) {
   final versionString = request.url.queryParameters["version"];
   if (versionString == null) return Response.badRequest();
   final version = int.tryParse(versionString);
@@ -45,59 +38,67 @@ Handler parseVersion(Response Function(Request, int) handler) => (request) {
   return handler(request, version);
 };
 
-String listToJson(Iterable<JsonSerializable> jsonList) => jsonEncode({
-  "list": [
-    for (final json in jsonList)
-      json.toJson(),
-  ],
-  "version": serverVersion,
-});
-
-List<T> jsonToList<T>(String json, FromJson<T> fromJson) {
-  final jsonList = jsonDecode(json) as List;
-  return [
-    for (final element in jsonList.cast<Json>())
-      fromJson(element),
-  ];
+Future<Response> download(Request request, int version) async {
+  final response = await server.download(version);
+  if (response == null) return Response.internalServerError();
+  final json = response.toJson();
+  return Response.ok(jsonEncode(json));
 }
 
-Response getCategories(Request request, int version) {
-  final result = categories.where((value) => value.version > version);
-  final body = listToJson(result);
-  return Response.ok(body);
-}
-
-Response getTasks(Request request, int version) {
-  final result = tasks.where((value) => value.version > version);
-  final body = listToJson(result);
-  return Response.ok(body);
-}
-
-Future<Response> post<T extends Syncable>(
-  Request request,
-  FromJson<T> fromJson,
-  List<T> values,
-  Future<void> Function(List<T>) write,
-) async {
+Future<Response> upload(Request request) async {
   final body = await request.readAsString();
-  final result = jsonToList(body, fromJson);
-  final didChange = values.merge(result);
-  if (didChange) {
-    serverVersion++;
-    for (final element in result) {
-      element.version = serverVersion;
-    }
-  }
-  await write(values);
-  await database.saveVersion(serverVersion);
-  return Response.ok(serverVersion.toString());
+  final json = jsonDecode(body) as Json;
+  final tasks = json.toList("tasks", Task.fromJson);
+  final categories = json.toList("categories", Category.fromJson);
+  final response = await server.upload(newTasks: tasks, newCategories: categories);
+  return Response.ok(jsonEncode(response.toJson()));
 }
 
-Future<Response> postCategories(Request request) =>
-  post(request, Category.fromJson, categories, database.writeCategories);
+// List<T> jsonToList<T>(String json, FromJson<T> fromJson) {
+//   final jsonList = jsonDecode(json) as List;
+//   return [
+//     for (final element in jsonList.cast<Json>())
+//       fromJson(element),
+//   ];
+// }
 
-Future<Response> postTasks(Request request) =>
-  post(request, Task.fromJson, tasks, database.writeTasks);
+// Response getCategories(Request request, int version) {
+//   final result = categories.where((value) => value.version > version);
+//   final body = listToJson(result);
+//   return Response.ok(body);
+// }
 
-Future<Response> getVersion(Request request) async =>
-  Response.ok(serverVersion.toString());
+// Response getTasks(Request request, int version) {
+//   final result = tasks.where((value) => value.version > version);
+//   final body = listToJson(result);
+//   return Response.ok(body);
+// }
+
+// Future<Response> post<T extends Syncable>(
+//   Request request,
+//   FromJson<T> fromJson,
+//   List<T> values,
+//   Future<void> Function(List<T>) write,
+// ) async {
+//   final body = await request.readAsString();
+//   final result = jsonToList(body, fromJson);
+//   final didChange = values.merge(result);
+//   if (didChange) {
+//     serverVersion++;
+//     for (final element in result) {
+//       element.version = serverVersion;
+//     }
+//   }
+//   await write(values);
+//   await database.saveVersion(serverVersion);
+//   return Response.ok(serverVersion.toString());
+// }
+
+// Future<Response> postCategories(Request request) =>
+//   post(request, Category.fromJson, categories, database.writeCategories);
+
+// Future<Response> postTasks(Request request) =>
+//   post(request, Task.fromJson, tasks, database.writeTasks);
+
+// Future<Response> getVersion(Request request) async =>
+//   Response.ok(serverVersion.toString());

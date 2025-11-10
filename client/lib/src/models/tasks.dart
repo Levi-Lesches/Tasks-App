@@ -40,9 +40,13 @@ class TasksModel extends DataModel {
   // Upload: POST w/ modified events. Server returns server_version++
   Future<void> sync() async {
     try {
+      services.client.tasks = tasks;
+      services.client.categories = categories;
       final didChange = await services.client.sync();
       if (didChange) {
         showSnackBar("Synced tasks to server");
+        tasks = services.client.tasks;
+        categories = services.client.categories;
         _sortTasks();
         notifyListeners();
       } else {
