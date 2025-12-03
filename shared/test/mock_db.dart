@@ -32,6 +32,12 @@ class MockDatabase implements DatabaseService {
 
   @override
   Future<void> saveVersion(int version) async { }
+
+  @override
+  Future<Settings?> readSettings() async => Settings();
+
+  @override
+  Future<void> writeSettings(Settings settings) async { }
 }
 
 class MockServer extends HostedTasksServer {

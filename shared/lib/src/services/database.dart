@@ -19,15 +19,44 @@ class SyncService extends Service {
   }
 }
 
-class DatabaseService extends Service {
+extension on File {
   static const _encoder = JsonEncoder.withIndent("  ");
 
+  Future<List<T>> readJsonList<T>(FromJson<T> fromJson) async {
+    final contents = await readAsString();
+    if (contents.isEmpty) return [];
+    final jsonList = (jsonDecode(contents) as List).cast<Json>();
+    return jsonList.map(fromJson).toList();
+  }
+
+  Future<T?> readJson<T>(FromJson<T> fromJson) async {
+    final contents = await readAsString();
+    if (contents.isEmpty) return null;
+    final json = jsonDecode(contents) as Json;
+    return fromJson(json);
+  }
+
+  Future<void> writeJsonList<T extends JsonSerializable>(List<T> elements) async {
+    final jsonList = elements.toJson().toList();
+    final json = _encoder.convert(jsonList);
+    await writeAsString(json);
+  }
+
+  Future<void> writeJson(JsonSerializable data) async {
+    final json = data.toJson();
+    final contents = _encoder.convert(json);
+    await writeAsString(contents);
+  }
+}
+
+class DatabaseService extends Service {
   final Directory dir;
   DatabaseService(this.dir);
 
   File get _tasksFile => File(dir / "tasks.json");
   File get _categoriesFile => File(dir / "categories.json");
   File get _versionFile => File(dir / "version.json");
+  File get _settingsFile => File(dir / "settings.json");
 
   @override
   Future<void> init() async {
@@ -35,32 +64,20 @@ class DatabaseService extends Service {
     await _tasksFile.create();
     await _categoriesFile.create();
     await _versionFile.create();
-  }
-
-  Future<List<T>> _readJsonList<T>(File file, FromJson<T> fromJson) async {
-    final contents = await file.readAsString();
-    if (contents.isEmpty) return [];
-    final jsonList = (jsonDecode(contents) as List).cast<Json>();
-    return jsonList.map(fromJson).toList();
-  }
-
-  Future<void> _writeJsonList<T extends JsonSerializable>(File file, List<T> elements) async {
-    final jsonList = elements.toJson().toList();
-    final json = _encoder.convert(jsonList);
-    await file.writeAsString(json);
+    await _settingsFile.create();
   }
 
   Future<List<Category>> readCategories() =>
-    _readJsonList(_categoriesFile, Category.fromJson);
+    _categoriesFile.readJsonList(Category.fromJson);
 
   Future<void> writeCategories(List<Category> categories) =>
-    _writeJsonList(_categoriesFile, categories);
+    _categoriesFile.writeJsonList(categories);
 
   Future<List<Task>> readTasks() =>
-    _readJsonList(_tasksFile, Task.fromJson);
+    _tasksFile.readJsonList(Task.fromJson);
 
   Future<void> writeTasks(List<Task> tasks) =>
-    _writeJsonList(_tasksFile, tasks);
+    _tasksFile.writeJsonList(tasks);
 
   Future<Directory> saveBackup() async {
     final now = DateTime.now();
@@ -78,4 +95,10 @@ class DatabaseService extends Service {
     final contents = await _versionFile.readAsString();
     return contents.isEmpty ? 0 : int.parse(contents);
   }
+
+  Future<Settings?> readSettings() =>
+    _settingsFile.readJson(Settings.fromJson);
+
+  Future<void> writeSettings(Settings settings) =>
+    _settingsFile.writeJson(settings);
 }
