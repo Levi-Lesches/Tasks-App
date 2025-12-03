@@ -3,7 +3,7 @@ import "package:tasks/data.dart";
 import "package:tasks/models.dart";
 export "package:go_router/go_router.dart";
 
-import "src/pages/home/desktop.dart";
+import "src/pages/list.dart";
 import "src/pages/task.dart";
 import "src/pages/splash.dart";
 
@@ -44,7 +44,7 @@ final router = GoRouter(
     GoRoute(
       path: Routes.home,
       name: Routes.home,
-      builder: (_, __) => HomePageDesktop(),
+      builder: (_, __) => TaskListPage(),
     ),
     GoRoute(
       path: "/tasks/:id",

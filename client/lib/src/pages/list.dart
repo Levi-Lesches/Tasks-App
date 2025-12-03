@@ -15,7 +15,7 @@ extension on ThemeMode {
 }
 
 /// The home page.
-class HomePageDesktop extends ReactiveWidget<HomeModel> {
+class TaskListPage extends ReactiveWidget<HomeModel> {
   @override
   HomeModel createModel() => HomeModel();
 
