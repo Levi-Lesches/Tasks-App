@@ -1,4 +1,4 @@
-name: _
+name: tasks_workspace
 
 environment:
   sdk: ^3.5.0

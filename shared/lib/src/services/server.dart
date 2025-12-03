@@ -1,5 +1,6 @@
 import "package:shared/data.dart";
 import "database.dart";
+import "service.dart";
 
 typedef AsyncFunc<T> = Future<void> Function(T);
 
@@ -34,7 +35,7 @@ class SyncException implements Exception {
   String toString() => message;
 }
 
-abstract interface class TasksServer {
+abstract class TasksServer extends Service {
   Future<ServerResponse> upload({
     required Iterable<Task> newTasks,
     required Iterable<Category> newCategories,

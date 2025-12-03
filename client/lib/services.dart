@@ -19,6 +19,7 @@ class Services extends Service {
   late final DatabaseService database;
   late final httpClient = HttpTasksServer();
   late final client = TasksClient(server: httpClient, database: database);
+  TasksServer? server;
 
 	/// The different services to initialize, in this order.
 	List<Service> get services => [database, httpClient, client];
@@ -28,6 +29,10 @@ class Services extends Service {
     final root = await getApplicationDocumentsDirectory();
     final dir = Directory(root / "Tasks App");
     database = DatabaseService(dir);
+    if (Platform.isWindows) {
+      server = HostedTasksServer(database: database);
+      await server!.init();
+    }
 		for (final service in services) {
       await service.init();
     }
