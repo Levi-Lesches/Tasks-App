@@ -91,6 +91,7 @@ class CreateTextField extends StatelessWidget {
       controller: editor.controller,
       onSubmitted: editor.submit,
       autofocus: !context.isMobile,
+      textCapitalization: TextCapitalization.sentences,
       style: style,
       maxLines: multiline ? null : 1,
       decoration: InputDecoration(
