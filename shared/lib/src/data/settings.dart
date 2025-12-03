@@ -2,8 +2,8 @@ import "category.dart";
 import "utils.dart";
 
 class Settings extends JsonSerializable {
-  final int themeModeIndex;
-  final List<CategoryID> listOrder;
+  int themeModeIndex;
+  List<CategoryID> listOrder;
 
   Settings() :
     themeModeIndex = 0,  // auto
