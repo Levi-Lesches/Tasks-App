@@ -49,12 +49,14 @@ class HomeModel extends ViewModel {
 
   void updateDescription(String value) {
     category.description = value.nullIfEmpty;
+    category.modified();
     models.tasks.saveCategories();
   }
 
   void updateTitle(String value) {
     if (value.trim().isEmpty) return;
     category.title = value;
+    category.modified();
     models.tasks.saveCategories();
   }
 
