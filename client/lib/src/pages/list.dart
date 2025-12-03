@@ -169,18 +169,20 @@ class TaskListPage extends ReactiveWidget<HomeModel> {
               const Divider(),
               const SizedBox(height: 8),
 
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                child: CreateTextField(
+                  editor: model.taskEditor,
+                  hint: "Add a task...",
+                  rounded: true,
+                ),
+              ),
+              const Divider(),
+
               for (final task in model.tasks) ...[
                 TaskTile(task),
                 const Divider(),
               ],
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: CreateTextField(
-                  editor: model.taskEditor,
-                  hint: "Add a task...",
-                ),
-              ),
             ],
           ),
         ),
