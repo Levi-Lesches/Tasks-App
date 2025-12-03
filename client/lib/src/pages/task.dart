@@ -2,6 +2,7 @@ import "dart:async";
 
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
+import "package:markdown_widget/markdown_widget.dart";
 import "package:tasks/data.dart";
 import "package:tasks/models.dart";
 import "package:tasks/view_models.dart";
@@ -11,7 +12,7 @@ class TaskViewModel extends ViewModel {
   final Task task;
   late final titleEditor = TextEditor(changeTitle);
   late final descriptionEditor = TextEditor(changeDescription);
-  Category get list => models.tasks.categories.byID(task.categoryID)!;
+  Category get list => models.tasks.allLists.byID(task.categoryID)!;
 
   TaskViewModel(this.task) {
     titleEditor.addListener(notifyListeners);
@@ -121,12 +122,12 @@ class TaskPage extends ReactiveWidget<TaskViewModel> {
             ),
           )
           else
-            InkWell(
-              onTap: () => model.descriptionEditor.startEditing(task.description),
-              child: Text(
-                task.description ?? "No Description",
-                textAlign: TextAlign.start,
-                style: context.textTheme.bodyLarge,
+            Expanded(
+              child: MarkdownWidget(
+                config: context.colorScheme.brightness == Brightness.dark
+                  ? MarkdownConfig.darkConfig
+                  : MarkdownConfig.defaultConfig,
+                data: task.description ?? "_No Description_",
               ),
             ),
         ],
@@ -142,7 +143,7 @@ class TaskPage extends ReactiveWidget<TaskViewModel> {
           const SizedBox(height: 12),
           Text("  Choose a list", style: context.textTheme.headlineSmall),
           const Divider(),
-          for (final list in models.tasks.categories.notDeleted)
+          for (final list in models.tasks.activeLists)
             ListTile(
               title: Text(list.title),
               onTap: () => context.pop(list),

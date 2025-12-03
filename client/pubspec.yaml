@@ -20,6 +20,7 @@ dependencies:
   server:
     path: ../server
   shelf: ^1.4.2
+  markdown_widget: ^2.3.2+8
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.4

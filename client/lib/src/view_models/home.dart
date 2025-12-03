@@ -14,10 +14,9 @@ class HomeModel extends ViewModel {
   late final titleEditor = TextEditor(updateTitle);
   late final descriptionEditor = TextEditor(updateDescription);
 
-  List<Category> get categories => models.tasks.categories
-    .where((c) => !c.isDeleted).toList();
+  Iterable<Category> get categories => models.tasks.activeLists;
   int categoryIndex = 0;
-  Category get category => categories[categoryIndex];
+  Category get category => categories.toList()[categoryIndex];
 
   @override
   Future<void> init() async {
@@ -66,7 +65,7 @@ class HomeModel extends ViewModel {
   }
 
   Future<void> deleteCategory() async {
-    if (models.tasks.categories.length == 1) {
+    if (models.tasks.activeLists.length == 1) {
       return showSnackBar("Cannot delete the last category");
     }
     await models.tasks.deleteCategory(category);
@@ -78,7 +77,13 @@ class HomeModel extends ViewModel {
   void reorderList(int oldIndex, int newIndex) {
     if (oldIndex < newIndex) newIndex -= 1;
     models.tasks.reorderList(oldIndex, newIndex);
-    if (categoryIndex == oldIndex) selectCategory(newIndex);
+    if (categoryIndex == oldIndex) {
+      selectCategory(newIndex);
+    } else if (categoryIndex > oldIndex && categoryIndex < newIndex) {
+      selectCategory(categoryIndex - 1);
+    } else if (categoryIndex < oldIndex && categoryIndex > newIndex) {
+      selectCategory(categoryIndex + 1);
+    }
   }
 
   bool isExpanded = false;

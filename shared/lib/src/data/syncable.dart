@@ -26,7 +26,7 @@ abstract class Syncable<T extends Object> extends JsonSerializable {
   }
 }
 
-extension SyncUtils<T extends Object, E extends Syncable<T>> on List<E> {
+extension SyncUtils<E extends Syncable> on List<E> {
   bool merge(Iterable<E> updated) {
     var didChange = false;
     for (final newValue in updated) {
@@ -44,7 +44,9 @@ extension SyncUtils<T extends Object, E extends Syncable<T>> on List<E> {
     }
     return didChange;
   }
+}
 
+extension SyncUtils2<T extends Object, E extends Syncable<T>> on Iterable<E> {
   Iterable<E> get notDeleted => where((item) => !item.isDeleted);
   Iterable<E> get modified => where((item) => item.isModified);
   Iterable<E> newerThan(int version) => where((item) => item.version > version);

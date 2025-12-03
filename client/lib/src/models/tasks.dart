@@ -14,7 +14,8 @@ enum SortMode {
 
 class TasksModel extends DataModel {
   List<Task> tasks = [];
-  List<Category> categories = [];
+  List<Category> allLists = [];
+  List<Category> activeLists = [];
   SortMode _sortMode = SortMode.priorityStatus;
   DateTime lastUpdated = DateTime.now();
   SortMode get sortMode => _sortMode;
@@ -27,7 +28,7 @@ class TasksModel extends DataModel {
   @override
   Future<void> init() async {
     models.server.addListener(onServerSync);
-    categories = await services.database.readCategories();
+    allLists = await services.database.readCategories();
     tasks = await services.database.readTasks();
     _sortTasks();
     sync(quiet: true).ignore();
@@ -36,7 +37,7 @@ class TasksModel extends DataModel {
   void onServerSync() {
     showSnackBar("Received sync from client");
     tasks = models.server.tasks;
-    categories = models.server.lists;
+    allLists = models.server.lists;
     _sortTasks();
     notifyListeners();
   }
@@ -49,12 +50,12 @@ class TasksModel extends DataModel {
   Future<void> sync({bool quiet = false}) async {
     try {
       services.client.tasks = tasks;
-      services.client.categories = categories;
+      services.client.categories = allLists;
       final didChange = await services.client.sync();
       if (didChange) {
         showSnackBar("Synced tasks to server");
         tasks = services.client.tasks;
-        categories = services.client.categories;
+        allLists = services.client.categories;
         _sortTasks();
         notifyListeners();
       } else {
@@ -71,14 +72,15 @@ class TasksModel extends DataModel {
   };
 
   void _sortTasks() {
-    categories = models.settings.settings.listOrder
-      .map((listID) => categories.byID(listID))
+    activeLists = models.settings.settings.listOrder
+      .map((listID) => allLists.byID(listID))
       .nonNulls
+      .notDeleted
       .toList();
-    for (final list in categories) {
-      if (categories.byID(list.id) != null) continue;
-      // This list is on the user's device but is not in the sort order
-      categories.add(list);
+    for (final list in allLists.notDeleted) {
+      if (activeLists.byID(list.id) != null) continue;
+      // This non-deleted list is not in the sort order
+      activeLists.add(list);
       models.settings.settings.listOrder.add(list.id);
     }
     models.settings.save();
@@ -87,10 +89,10 @@ class TasksModel extends DataModel {
   }
 
   void reorderList(int oldIndex, int newIndex) {
-    final item = categories.removeAt(oldIndex);
-    categories.insert(newIndex, item);
+    final item = activeLists.removeAt(oldIndex);
+    activeLists.insert(newIndex, item);
     models.settings.settings.listOrder = [
-      for (final list in categories)
+      for (final list in activeLists)
         list.id,
     ];
     models.settings.save();
@@ -123,13 +125,6 @@ class TasksModel extends DataModel {
   Iterable<Task> tasksWithPriority(TaskPriority priority) => tasks
     .where((task) => task.priority == priority)
     .where((task) => !task.isDeleted);
-
-  Future<Category> createCategory(String title) async {
-    final category = Category(title: title);
-    categories.add(category);
-    await saveCategories();
-    return category;
-  }
 
   Future<void> createTask(Category category, String title) =>
     addTask(Task(title: title, categoryID: category.id));
@@ -166,13 +161,16 @@ class TasksModel extends DataModel {
   }
 
   Future<void> saveCategories() async {
-    await services.database.writeCategories(categories);
-    notifyListeners();
+    await services.database.writeCategories(allLists);
+    _sortTasks();
   }
 
-  Future<void> addCategory(Category category) async {
-    categories.add(category);
+  Future<Category> createCategory(String title) async {
+    final category = Category(title: title);
+    allLists.add(category);
+    activeLists.add(category);
     await saveCategories();
+    return category;
   }
 
   TaskPriority priorityForCategory(Category category) {
@@ -194,14 +192,14 @@ class TasksModel extends DataModel {
     // Save all modified tasks and categories and increment version
     var didChange = false;
     final newVersion = services.client.version + 1;
-    final toUpdate = <Syncable>[...categories, ...tasks].modified;
+    final toUpdate = <Syncable>[...allLists, ...tasks].modified;
     for (final item in toUpdate) {
       item.version = newVersion;
       didChange = true;
     }
     if (didChange) {
       await services.database.writeTasks(tasks);
-      await services.database.writeCategories(categories);
+      await services.database.writeCategories(allLists);
       await services.database.saveVersion(newVersion);
       services.client.version = newVersion;
     }

@@ -120,6 +120,7 @@ class TaskListPage extends ReactiveWidget<HomeModel> {
       children: [
         Expanded(
           child: ListView(
+            cacheExtent: 1000,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             children: [
               ToggleTextField(

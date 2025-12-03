@@ -33,12 +33,13 @@ class EmbeddedTasksServer extends ShelfTasksServer with ChangeNotifier {
 }
 
 class ServerModel extends DataModel {
-  final server = EmbeddedTasksServer(database: services.database);
+  late final EmbeddedTasksServer server;
   List<Task> get tasks => server.server.tasks;
   List<Category> get lists => server.server.categories;
 
   @override
   Future<void> init() async {
+    server = EmbeddedTasksServer(database: services.database);
     if (Platform.isWindows) await server.init();
     server.addListener(notifyListeners);
   }
