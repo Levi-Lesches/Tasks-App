@@ -67,7 +67,7 @@ class TaskPage extends ReactiveWidget<TaskViewModel> {
             TextButton.icon(
               label: const Text("Save"),
               icon: const Icon(Icons.save),
-              onPressed: model.changeDescription,
+              onPressed: model.descriptionEditor.submit,
             )
           else
             TextButton.icon(

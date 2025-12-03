@@ -49,6 +49,7 @@ linter:
     one_member_abstracts: false  # abstract classes are good for interfaces
     cascade_invocations: false  # this often looks uglier
     parameter_assignments: false  # cleaner functions
+    avoid_positional_boolean_parameters: false  # Flutter callbacks
 
     # Temporarily disabled until we are ready to document
     public_member_api_docs: false

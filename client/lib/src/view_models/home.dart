@@ -80,4 +80,10 @@ class HomeModel extends ViewModel {
     models.tasks.reorderList(oldIndex, newIndex);
     if (categoryIndex == oldIndex) selectCategory(newIndex);
   }
+
+  bool isExpanded = false;
+  void expandDonePanel(bool value) {
+    isExpanded = value;
+    notifyListeners();
+  }
 }

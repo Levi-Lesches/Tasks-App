@@ -189,6 +189,11 @@ class TaskListPage extends ReactiveWidget<HomeModel> {
         ),
         const Divider(),
         ExpansionTile(
+          onExpansionChanged: model.expandDonePanel,
+          controlAffinity: ListTileControlAffinity.trailing,
+          trailing: model.isExpanded
+            ? const Icon(Icons.keyboard_arrow_down)
+            : const Icon(Icons.keyboard_arrow_up),
           enabled: model.finishedTasks.isNotEmpty,
           title: Text("Finished tasks (${model.finishedTasks.length})"),
           children: [
