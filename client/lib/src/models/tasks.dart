@@ -176,4 +176,10 @@ class TasksModel extends DataModel {
       .reduce(min);
     return TaskPriority.values[index];
   }
+
+  Future<void> moveTask(Task task, Category list) async {
+    task.categoryID = list.id;
+    task.modified();
+    await saveTasks();
+  }
 }

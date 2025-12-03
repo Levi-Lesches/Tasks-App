@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
 import "package:tasks/data.dart";
@@ -9,10 +11,12 @@ class TaskViewModel extends ViewModel {
   final Task task;
   late final titleEditor = TextEditor(changeTitle);
   late final descriptionEditor = TextEditor(changeDescription);
+  Category get list => models.tasks.categories.byID(task.categoryID)!;
 
   TaskViewModel(this.task) {
     titleEditor.addListener(notifyListeners);
     descriptionEditor.addListener(notifyListeners);
+    models.tasks.addListener(notifyListeners);
   }
 
   void changeTitle(String value) {
@@ -63,18 +67,31 @@ class TaskPage extends ReactiveWidget<TaskViewModel> {
           const Divider(),
           const SizedBox(height: 12),
 
-          if (model.descriptionEditor.isEditing)
-            TextButton.icon(
-              label: const Text("Save"),
-              icon: const Icon(Icons.save),
-              onPressed: model.descriptionEditor.submit,
-            )
-          else
-            TextButton.icon(
-              label: const Text("Edit description"),
-              onPressed: () => model.descriptionEditor.startEditing(task.description),
-              icon: const Icon(Icons.edit),
-            ),
+          Row(
+            children: [
+              if (model.descriptionEditor.isEditing)
+                TextButton.icon(
+                  label: const Text("Save"),
+                  icon: const Icon(Icons.save),
+                  onPressed: model.descriptionEditor.submit,
+                )
+              else
+                TextButton.icon(
+                  label: const Text("Edit description"),
+                  onPressed: () => model.descriptionEditor.startEditing(task.description),
+                  icon: const Icon(Icons.edit),
+                ),
+              const Spacer(),
+              Text(model.list.toString(), style: context.textTheme.bodyLarge),
+              const SizedBox(width: 12),
+              Builder(
+                builder: (context) => TextButton(
+                  child: const Text("Change"),
+                  onPressed: () => changeList(context, task),
+                ),
+              ),
+            ],
+          ),
 
           const SizedBox(height: 12),
 
@@ -116,4 +133,24 @@ class TaskPage extends ReactiveWidget<TaskViewModel> {
       ),
     ),
   );
+
+  Future<void> changeList(BuildContext context, Task task) async {
+    final result = await showModalBottomSheet<Category>(
+      context: context,
+      builder: (context) => ListView(
+        children: [
+          const SizedBox(height: 12),
+          Text("  Choose a list", style: context.textTheme.headlineSmall),
+          const Divider(),
+          for (final list in models.tasks.categories.notDeleted)
+            ListTile(
+              title: Text(list.title),
+              onTap: () => context.pop(list),
+            ),
+        ],
+      ),
+    );
+    if (result == null) return;
+    await models.tasks.moveTask(task, result);
+  }
 }
