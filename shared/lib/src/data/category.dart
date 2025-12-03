@@ -9,7 +9,7 @@ extension type CategoryID(String value) implements String {
   static CategoryID? fromJson(String? json) => json == null ? null : CategoryID(json);
 }
 
-class Category extends Syncable {
+class Category extends Syncable<CategoryID>{
   @override final CategoryID id;
   String title;
   String? description;

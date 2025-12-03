@@ -14,7 +14,7 @@ class Models extends DataModel {
   final settings = SettingsModel();
 
 	/// A list of all models to manage.
-	List<DataModel> get models => [tasks, settings];
+	List<DataModel> get models => [settings, tasks];
 
 	@override
 	Future<void> init() async {

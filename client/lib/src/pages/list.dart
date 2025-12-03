@@ -26,7 +26,7 @@ class TaskListPage extends ReactiveWidget<HomeModel> {
   Widget build(BuildContext context, HomeModel model) => ResponsiveSidebar(
     key: model.appBarKey,
     sidebar: Sidebar(
-      onReorder: (_, __) { },
+      onReorder: models.tasks.reorderList,
       title: "My Lists",
       items: [
         for (final category in model.categories)
@@ -34,7 +34,7 @@ class TaskListPage extends ReactiveWidget<HomeModel> {
             label: category.title,
             icon: iconChip(models.tasks.priorityForCategory(category).toChip()),
           ),
-        ],
+      ],
       onSelected: model.selectCategory,
       selectedIndex: model.categoryIndex,
       trailing: Padding(

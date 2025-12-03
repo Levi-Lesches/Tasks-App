@@ -60,7 +60,7 @@ class HostedTasksServer extends SyncService implements TasksServer {
       );
     }
     version++;
-    for (final item in [...newTasks, ...newCategories]) {
+    for (final item in <Syncable>[...newTasks, ...newCategories]) {
       item.version = version;
     }
     await database.writeTasks(tasks);

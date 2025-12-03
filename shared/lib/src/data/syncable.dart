@@ -1,9 +1,10 @@
+import "package:collection/collection.dart";
 import "package:meta/meta.dart";
 
 import "utils.dart";
 
-abstract class Syncable extends JsonSerializable {
-  Object get id;
+abstract class Syncable<T extends Object> extends JsonSerializable {
+  T get id;
   int version;
   bool isDeleted;
   Syncable({this.version = 0, this.isDeleted = false});
@@ -25,7 +26,7 @@ abstract class Syncable extends JsonSerializable {
   }
 }
 
-extension SyncUtils<E extends Syncable> on List<E> {
+extension SyncUtils<T extends Object, E extends Syncable<T>> on List<E> {
   bool merge(Iterable<E> updated) {
     var didChange = false;
     for (final newValue in updated) {
@@ -46,4 +47,6 @@ extension SyncUtils<E extends Syncable> on List<E> {
 
   Iterable<E> newerThan(int version) => where((item) => item.version > version);
   Iterable<E> get allModified => where((item) => item.isModified);
+
+  E? byID(T id) => firstWhereOrNull((item) => item.id == id);
 }

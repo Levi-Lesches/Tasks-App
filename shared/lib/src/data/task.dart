@@ -31,7 +31,7 @@ enum TaskStatus {
   String toJson() => name;
 }
 
-class Task extends Syncable {
+class Task extends Syncable<TaskID> {
   @override final TaskID id;
   CategoryID categoryID;
   String title;

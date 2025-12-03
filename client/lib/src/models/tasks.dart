@@ -3,10 +3,9 @@ import "dart:math";
 import "package:collection/collection.dart";
 import "package:flutter/material.dart";
 import "package:tasks/data.dart";
+import "package:tasks/models.dart";
 import "package:tasks/services.dart";
 import "package:tasks/widgets.dart";
-
-import "model.dart";
 
 enum SortMode {
   statusPriority,
@@ -15,6 +14,7 @@ enum SortMode {
 
 class TasksModel extends DataModel {
   List<Task> tasks = [];
+  List<Category> allCategories = [];
   List<Category> categories = [];
   SortMode _sortMode = SortMode.priorityStatus;
   DateTime lastUpdated = DateTime.now();
@@ -27,9 +27,10 @@ class TasksModel extends DataModel {
 
   @override
   Future<void> init() async {
-    categories = await services.database.readCategories();
-    categories.removeWhere((c) => c.id == doneCategory.id);
+    allCategories = await services.database.readCategories();
+    categories = allCategories;
     tasks = await services.database.readTasks();
+    _sortTasks();
     sync(quiet: true).ignore();
   }
 
@@ -63,8 +64,31 @@ class TasksModel extends DataModel {
   };
 
   void _sortTasks() {
+    categories = models.settings.settings.listOrder
+      .map((listID) => allCategories.byID(listID))
+      .nonNulls
+      .toList();
+    for (final list in allCategories) {
+      if (categories.byID(list.id) != null) continue;
+      // This list is on the user's device but is not in the sort order
+      categories.add(list);
+      models.settings.settings.listOrder.add(list.id);
+    }
+    models.settings.save();
     tasks = tasks.sortedBy(_generateSortKey);
     notifyListeners();
+  }
+
+  void reorderList(int oldIndex, int newIndex) {
+    if (oldIndex < newIndex) newIndex -= 1;
+    final item = categories.removeAt(oldIndex);
+    categories.insert(newIndex, item);
+    models.settings.settings.listOrder = [
+      for (final list in categories)
+        list.id,
+    ];
+    models.settings.save();
+    _sortTasks();
   }
 
   void _showTaskUndoPrompt(Task task) {
