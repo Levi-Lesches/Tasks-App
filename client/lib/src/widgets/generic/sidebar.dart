@@ -1,8 +1,6 @@
 import "dart:io";
 
-import "package:collection/collection.dart";
 import "package:flutter/material.dart";
-import "package:tasks/models.dart";
 import "package:tasks/widgets.dart";
 
 class Sidebar {
@@ -36,10 +34,6 @@ class Sidebar {
     selectedTileColor: Colors.blueGrey.withAlpha(75),
     leading: item.icon,
     titleTextStyle: context.textTheme.bodyMedium,
-    subtitle: Text(models.tasks.allCategories
-      .firstWhereOrNull((list) => list.title == item.label)
-      ?.isDeleted.toString() ?? "N/A",
-    ),
     onTap: () {onSelected(index); onTap?.call(); },
     contentPadding: const EdgeInsets.symmetric(horizontal: 4),
   );

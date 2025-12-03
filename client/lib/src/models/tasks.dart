@@ -80,7 +80,6 @@ class TasksModel extends DataModel {
   }
 
   void reorderList(int oldIndex, int newIndex) {
-    if (oldIndex < newIndex) newIndex -= 1;
     final item = categories.removeAt(oldIndex);
     categories.insert(newIndex, item);
     models.settings.settings.listOrder = [

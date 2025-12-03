@@ -74,4 +74,10 @@ class HomeModel extends ViewModel {
     await onUpdate();
     notifyListeners();
   }
+
+  void reorderList(int oldIndex, int newIndex) {
+    if (oldIndex < newIndex) newIndex -= 1;
+    models.tasks.reorderList(oldIndex, newIndex);
+    if (categoryIndex == oldIndex) selectCategory(newIndex);
+  }
 }
