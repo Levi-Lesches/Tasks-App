@@ -5,8 +5,6 @@ import "package:tasks/pages.dart";
 import "package:tasks/view_models.dart";
 import "package:tasks/widgets.dart";
 
-import "utils.dart";
-
 class TaskTileViewModel extends ViewModel {
   late final editor = TextEditor(onEdit);
 
