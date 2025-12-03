@@ -10,23 +10,38 @@ class Sidebar {
   final int selectedIndex;
   final String title;
   final ValueChanged<int> onSelected;
+  final void Function(int, int) onReorder;
 
   const Sidebar({
     required this.items,
     required this.selectedIndex,
     required this.onSelected,
     required this.title,
+    required this.onReorder,
     this.leading,
     this.trailing,
   });
 
+  ListTile buildTile(
+    BuildContext context,
+    int index,
+    NavigationDestination item, {
+    VoidCallback? onTap,
+  }) => ListTile(
+    title: Text(item.label),
+    key: ValueKey(item),
+    selected: index == selectedIndex,
+    selectedTileColor: Colors.blueGrey.withAlpha(75),
+    leading: item.icon,
+    titleTextStyle: context.textTheme.bodyMedium,
+    onTap: () {onSelected(index); onTap?.call(); },
+    contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+  );
+
   Widget _desktop(BuildContext context, double width) => SizedBox(
     width: width,
     child: Material(
-      child: NavigationDrawer(
-        tilePadding: EdgeInsets.zero,
-        onDestinationSelected: onSelected,
-        selectedIndex: selectedIndex,
+      child: Column(
         children: [
           DrawerHeader(
             child: Center(
@@ -35,8 +50,15 @@ class Sidebar {
           ),
           leading ?? Container(),
           const SizedBox(height: 12),
-          for (final item in items)
-            NavigationDrawerDestination(icon: item.icon, label: Text(item.label)),
+          Expanded(
+            child: ReorderableListView(
+              onReorder: onReorder,
+              children: [
+                for (final (index, item) in items.indexed)
+                  buildTile(context, index, item),
+              ],
+            ),
+          ),
           const SizedBox(height: 12),
           trailing ?? Container(),
         ],
@@ -45,26 +67,35 @@ class Sidebar {
   );
 
   Widget _mobile(BuildContext context) => Builder(
-    builder: (context) => NavigationDrawer(
-      tilePadding: EdgeInsets.zero,
-      onDestinationSelected: (value) {
-        Scaffold.of(context).closeDrawer();
-        onSelected(value);
-      },
-      selectedIndex: selectedIndex,
-      children: [
-        DrawerHeader(
-          child: Center(
-            child: Text(title, style: context.textTheme.headlineMedium),
-          ),
+    builder: (context) => SizedBox(
+      width: 250,
+      child: Material(
+        child: Column(
+          children: [
+            DrawerHeader(
+              child: Center(
+                child: Text(title, style: context.textTheme.headlineMedium),
+              ),
+            ),
+            leading ?? Container(),
+            const SizedBox(height: 12),
+            Expanded(
+              child: ReorderableListView(
+                onReorder: onReorder,
+                children: [
+                  for (final (index, item) in items.indexed)
+                    buildTile(
+                      context, index, item,
+                      onTap: () => Scaffold.of(context).closeDrawer(),
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            trailing ?? Container(),
+          ],
         ),
-        leading ?? Container(),
-        const SizedBox(height: 12),
-        for (final item in items)
-          NavigationDrawerDestination(icon: item.icon, label: Text(item.label)),
-        const SizedBox(height: 12),
-        trailing ?? Container(),
-      ],
+      ),
     ),
   );
 }
