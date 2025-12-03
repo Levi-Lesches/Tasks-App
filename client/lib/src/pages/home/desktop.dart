@@ -2,19 +2,20 @@ import "package:flutter/material.dart";
 import "package:url_launcher/url_launcher.dart";
 
 import "package:tasks/models.dart";
-import "package:tasks/pages.dart";
 import "package:tasks/services.dart";
 import "package:tasks/view_models.dart";
 import "package:tasks/widgets.dart";
 
-/// The home page.
-class HomePageDesktop extends ReactiveWidget<HomeModel> {
-  IconData get themeIcon => switch (themeMode.value) {
+extension on ThemeMode {
+  IconData get icon => switch (this) {
     ThemeMode.light => Icons.light_mode,
     ThemeMode.dark => Icons.dark_mode,
     ThemeMode.system => Icons.brightness_auto,
   };
+}
 
+/// The home page.
+class HomePageDesktop extends ReactiveWidget<HomeModel> {
   @override
   HomeModel createModel() => HomeModel();
 
@@ -90,13 +91,10 @@ class HomePageDesktop extends ReactiveWidget<HomeModel> {
             scaffoldKey.currentState?.showSnackBar(snackBar);
           },
         ),
-        ValueListenableBuilder(
-          valueListenable: themeMode,
-          builder: (context, _, __) => IconButton(
-            icon: Icon(themeIcon),
-            tooltip: "Switch theme",
-            onPressed: changeTheme,
-          ),
+        IconButton(
+          icon: Icon(models.settings.themeMode.icon),
+          tooltip: "Switch theme",
+          onPressed: models.settings.changeTheme,
         ),
         MenuAnchor(
           builder: (context, controller, child) => IconButton(

@@ -26,6 +26,7 @@ class HomeModel extends ViewModel {
     taskEditor.addListener(notifyListeners);
     titleEditor.addListener(notifyListeners);
     descriptionEditor.addListener(notifyListeners);
+    models.settings.addListener(notifyListeners);
     await onUpdate();
   }
 

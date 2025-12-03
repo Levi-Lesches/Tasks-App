@@ -1,4 +1,3 @@
-import "package:flutter/material.dart";
 import "package:go_router/go_router.dart";
 import "package:tasks/data.dart";
 import "package:tasks/models.dart";
@@ -16,13 +15,6 @@ class Routes {
   static const task = "/tasks";
   static const splash = "/splash";
 }
-
-ValueNotifier<ThemeMode> themeMode = ValueNotifier(ThemeMode.system);
-void changeTheme() => themeMode.value = switch(themeMode.value) {
-  ThemeMode.light => ThemeMode.dark,
-  ThemeMode.dark => ThemeMode.system,
-  ThemeMode.system => ThemeMode.light,
-};
 
 Task? getTask(GoRouterState state) {
   final extra = state.extra;

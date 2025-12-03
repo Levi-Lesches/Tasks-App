@@ -3,6 +3,7 @@ import "dart:io";
 
 import "package:flutter/material.dart";
 import "package:flutter/services.dart";
+import "package:tasks/models.dart";
 
 import "package:tasks/pages.dart";
 import "package:tasks/widgets.dart";
@@ -14,11 +15,13 @@ Future<void> main() async {
       DeviceOrientation.portraitUp,
     ]);
   }
-  runApp(const TasksApp());
+  runApp(TasksApp(models.settings));
 }
 
 /// The main app widget.
-class TasksApp extends StatelessWidget {
+class TasksApp extends ReusableReactiveWidget<SettingsModel> {
+  const TasksApp(super.model);
+
   ThemeData getTheme(BuildContext context, ColorScheme colorScheme) => ThemeData(
     useMaterial3: true,
     visualDensity: const VisualDensity(horizontal: -4, vertical: -2),  // Desktop
@@ -39,20 +42,14 @@ class TasksApp extends StatelessWidget {
     colorScheme: colorScheme,
   );
 
-  /// A const constructor.
-  const TasksApp();
-
   @override
-  Widget build(BuildContext context) => ValueListenableBuilder(
-    valueListenable: themeMode,
-    builder: (context, value, child) => MaterialApp.router(
-      title: "Flutter Demo",
-      scaffoldMessengerKey: scaffoldKey,
-      theme: getTheme(context, const ColorScheme.light()),
-      darkTheme: getTheme(context, const ColorScheme.dark()),
-      routerConfig: router,
-      themeMode: value,
-      debugShowCheckedModeBanner: false,
-    ),
+  Widget build(BuildContext context, SettingsModel settings) => MaterialApp.router(
+    title: "Flutter Demo",
+    scaffoldMessengerKey: scaffoldKey,
+    theme: getTheme(context, const ColorScheme.light()),
+    darkTheme: getTheme(context, const ColorScheme.dark()),
+    routerConfig: router,
+    themeMode: settings.isReady ? settings.themeMode : ThemeMode.system,
+    debugShowCheckedModeBanner: false,
   );
 }

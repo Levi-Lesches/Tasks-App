@@ -11,6 +11,17 @@ class SettingsModel extends DataModel {
   ThemeMode get themeMode => ThemeMode.values[settings.themeModeIndex];
   set themeMode(ThemeMode mode) => settings.themeModeIndex = mode.index;
 
+  Future<void> changeTheme() async {
+    themeMode = switch(themeMode) {
+      ThemeMode.light => ThemeMode.dark,
+      ThemeMode.dark => ThemeMode.system,
+      ThemeMode.system => ThemeMode.light,
+    };
+    await save();
+  }
+
+  bool isReady = false;
+
   @override
   Future<void> init() async {
     var settings = await services.database.readSettings();
@@ -19,7 +30,12 @@ class SettingsModel extends DataModel {
       await services.database.writeSettings(settings);
     }
     _settings = settings;
+    isReady = true;
+    notifyListeners();
   }
 
-  Future<void> save() => services.database.writeSettings(settings);
+  Future<void> save() async {
+    await services.database.writeSettings(settings);
+    notifyListeners();
+  }
 }
