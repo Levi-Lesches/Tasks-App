@@ -10,12 +10,8 @@ import "package:shared/shared.dart";
 class ShelfTasksServer extends Service {
   final DatabaseService database;
   final HostedTasksServer server;
-  final void Function()? onChanged;
 
-  ShelfTasksServer({
-    required this.database,
-    this.onChanged,
-  }) :
+  ShelfTasksServer({required this.database}) :
     server = HostedTasksServer(database: database);
 
   Handler _parseVersion(Future<Response> Function(Request, int) handler) => (request) {
@@ -53,10 +49,7 @@ class ShelfTasksServer extends Service {
     final json = jsonDecode(body) as Json;
     final tasks = json.toList("tasks", Task.fromJson);
     final categories = json.toList("categories", Category.fromJson);
-    final oldVersion = server.version;
     final response = await server.upload(newTasks: tasks, newCategories: categories);
-    final newVersion = server.version;
-    if (oldVersion != newVersion) onChanged?.call();
     return Response.ok(jsonEncode(response.toJson()));
   }
 }

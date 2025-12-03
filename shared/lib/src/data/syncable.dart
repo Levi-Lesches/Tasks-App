@@ -45,9 +45,12 @@ extension SyncUtils<T extends Object, E extends Syncable<T>> on List<E> {
     return didChange;
   }
 
-  Iterable<E> newerThan(int version) => where((item) => item.version > version);
-  Iterable<E> get allModified => where((item) => item.isModified);
   Iterable<E> get notDeleted => where((item) => !item.isDeleted);
+  Iterable<E> get modified => where((item) => item.isModified);
+  Iterable<E> newerThan(int version) => where((item) => item.version > version);
+  Iterable<E> modifiedOrNewerThan(int version) => where(
+    (item) => item.isModified || item.version > version,
+  );
 
   E? byID(T id) => firstWhereOrNull((item) => item.id == id);
 }

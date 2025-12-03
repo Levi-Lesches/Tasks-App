@@ -14,7 +14,6 @@ enum SortMode {
 
 class TasksModel extends DataModel {
   List<Task> tasks = [];
-  List<Category> allCategories = [];
   List<Category> categories = [];
   SortMode _sortMode = SortMode.priorityStatus;
   DateTime lastUpdated = DateTime.now();
@@ -27,11 +26,19 @@ class TasksModel extends DataModel {
 
   @override
   Future<void> init() async {
-    allCategories = await services.database.readCategories();
-    categories = allCategories;
+    models.server.addListener(onServerSync);
+    categories = await services.database.readCategories();
     tasks = await services.database.readTasks();
     _sortTasks();
     sync(quiet: true).ignore();
+  }
+
+  void onServerSync() {
+    showSnackBar("Received sync from client");
+    tasks = models.server.tasks;
+    categories = models.server.lists;
+    _sortTasks();
+    notifyListeners();
   }
 
   // Trinket works by first downloading, then uploading
@@ -65,10 +72,10 @@ class TasksModel extends DataModel {
 
   void _sortTasks() {
     categories = models.settings.settings.listOrder
-      .map((listID) => allCategories.byID(listID))
+      .map((listID) => categories.byID(listID))
       .nonNulls
       .toList();
-    for (final list in allCategories) {
+    for (final list in categories) {
       if (categories.byID(list.id) != null) continue;
       // This list is on the user's device but is not in the sort order
       categories.add(list);
@@ -181,5 +188,23 @@ class TasksModel extends DataModel {
     task.categoryID = list.id;
     task.modified();
     await saveTasks();
+  }
+
+  Future<bool> harden() async {
+    // Save all modified tasks and categories and increment version
+    var didChange = false;
+    final newVersion = services.client.version + 1;
+    final toUpdate = <Syncable>[...categories, ...tasks].modified;
+    for (final item in toUpdate) {
+      item.version = newVersion;
+      didChange = true;
+    }
+    if (didChange) {
+      await services.database.writeTasks(tasks);
+      await services.database.writeCategories(categories);
+      await services.database.saveVersion(newVersion);
+      services.client.version = newVersion;
+    }
+    return didChange;
   }
 }

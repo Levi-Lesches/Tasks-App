@@ -1,6 +1,6 @@
 import "package:shared/data.dart";
-import "database.dart";
 import "service.dart";
+import "sync.dart";
 
 typedef AsyncFunc<T> = Future<void> Function(T);
 
@@ -25,14 +25,6 @@ class ServerResponse {
     "categories": categories.toJson(),
     "version": version,
   };
-}
-
-class SyncException implements Exception {
-  final String message;
-  SyncException(this.message);
-
-  @override
-  String toString() => message;
 }
 
 abstract class TasksServer extends Service {

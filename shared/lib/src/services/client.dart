@@ -1,7 +1,7 @@
 import "package:shared/data.dart";
 
-import "database.dart";
 import "server.dart";
+import "sync.dart";
 
 class TasksClient extends SyncService {
   final TasksServer server;
@@ -26,8 +26,8 @@ class TasksClient extends SyncService {
 
     // 2. Upload all new items to the server
     response = await server.upload(
-      newTasks: tasks.allModified,
-      newCategories: categories.allModified,
+      newTasks: tasks.modifiedOrNewerThan(response.version),
+      newCategories: categories.modifiedOrNewerThan(response.version),
     );
     handleResponse(response);
 
