@@ -26,8 +26,8 @@ class MenuPicker<T> extends StatelessWidget {
             onPressed: () => onChanged(value),
           ),
       ],
-      style: const MenuStyle(
-        backgroundColor: WidgetStatePropertyAll(Colors.blueGrey),
+      style: MenuStyle(
+        backgroundColor: WidgetStatePropertyAll(Colors.blueGrey.shade200),
       ),
       builder: (context, controller, child) => InkWell(
         onTap: () => controller.open(),
