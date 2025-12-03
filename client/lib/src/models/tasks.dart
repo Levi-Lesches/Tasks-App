@@ -30,7 +30,7 @@ class TasksModel extends DataModel {
     categories = await services.database.readCategories();
     categories.removeWhere((c) => c.id == doneCategory.id);
     tasks = await services.database.readTasks();
-    sync().ignore();
+    sync(quiet: true).ignore();
   }
 
   // Trinket works by first downloading, then uploading
@@ -38,7 +38,7 @@ class TasksModel extends DataModel {
   // The server and client both have version numbers
   // Download: POST w/ client version. Server returns all tasks that have been updated since then + server_version
   // Upload: POST w/ modified events. Server returns server_version++
-  Future<void> sync() async {
+  Future<void> sync({bool quiet = false}) async {
     try {
       services.client.tasks = tasks;
       services.client.categories = categories;
@@ -50,10 +50,10 @@ class TasksModel extends DataModel {
         _sortTasks();
         notifyListeners();
       } else {
-        showSnackBar("No changes to sync");
+        if (!quiet) showSnackBar("No changes to sync");
       }
     } on SyncException catch (error) {
-      showSnackBar("Could not sync: $error");
+      if (!quiet) showSnackBar("Could not sync: $error");
     }
   }
 
