@@ -38,6 +38,7 @@ class TasksModel extends DataModel {
     showSnackBar("Received sync from client");
     tasks = models.server.tasks;
     allLists = models.server.lists;
+    services.client.version = models.server.version;
     _sortTasks();
     notifyListeners();
   }
@@ -202,6 +203,7 @@ class TasksModel extends DataModel {
       await services.database.writeCategories(allLists);
       await services.database.saveVersion(newVersion);
       services.client.version = newVersion;
+      notifyListeners();
     }
     return didChange;
   }

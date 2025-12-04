@@ -71,7 +71,6 @@ class BroadcastClient {
     servers = [];
     final buffer = Uint8List.fromList(requestString.codeUnits);
     for (final address in await getAllAddresses()) {
-      if (!address.address.startsWith("192")) continue;
       socket.send(buffer, address.broadcast, BroadcastServer.port);
     }
     const delay = Duration(milliseconds: 3000);

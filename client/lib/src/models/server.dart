@@ -36,6 +36,7 @@ class ServerModel extends DataModel {
   late final EmbeddedTasksServer server;
   List<Task> get tasks => server.server.tasks;
   List<Category> get lists => server.server.categories;
+  int get version => server.server.version;
 
   @override
   Future<void> init() async {

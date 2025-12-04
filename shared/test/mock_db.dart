@@ -38,6 +38,9 @@ class MockDatabase implements DatabaseService {
 
   @override
   Future<void> writeSettings(Settings settings) async { }
+
+  @override
+  Future<void> restore(Directory newDir) async { }
 }
 
 class MockServer extends HostedTasksServer {

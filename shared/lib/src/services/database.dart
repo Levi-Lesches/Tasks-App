@@ -86,4 +86,11 @@ class DatabaseService extends Service {
 
   Future<void> writeSettings(Settings settings) =>
     _settingsFile.writeJson(settings);
+
+  Future<void> restore(Directory newDir) async {
+    await for (final file in newDir.list()) {
+      if (file is! File) return;
+      await file.copy(dir / file.uri.pathSegments.last);
+    }
+  }
 }
