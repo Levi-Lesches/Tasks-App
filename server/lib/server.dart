@@ -49,7 +49,12 @@ class ShelfTasksServer extends Service {
     final json = jsonDecode(body) as Json;
     final tasks = json.toList("tasks", Task.fromJson);
     final categories = json.toList("categories", Category.fromJson);
-    final response = await server.upload(newTasks: tasks, newCategories: categories);
+    final version = json["version"] as int;
+    final response = await server.upload(
+      clientVersion: version,
+      newTasks: tasks,
+      newCategories: categories,
+    );
     return Response.ok(jsonEncode(response.toJson()));
   }
 }

@@ -49,10 +49,12 @@ class HttpTasksServer extends Service implements TasksServer {
 
   @override
   Future<ServerResponse> upload({
+    required int clientVersion,
     required Iterable<Task> newTasks,
     required Iterable<Category> newCategories,
   }) async {
     final body = {
+      "version": clientVersion,
       "tasks": newTasks.toJson(),
       "categories": newCategories.toJson(),
     };

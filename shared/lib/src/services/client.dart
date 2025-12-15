@@ -26,6 +26,7 @@ class TasksClient extends SyncService {
 
     // 2. Upload all new items to the server
     response = await server.upload(
+      clientVersion: version,
       newTasks: tasks.modifiedOrNewerThan(response.version),
       newCategories: categories.modifiedOrNewerThan(response.version),
     );

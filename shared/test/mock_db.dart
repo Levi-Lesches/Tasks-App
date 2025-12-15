@@ -48,9 +48,11 @@ class MockServer extends HostedTasksServer {
 
   @override
   Future<ServerResponse> upload({
+    required int clientVersion,
     required Iterable<Task> newTasks,
     required Iterable<Category> newCategories,
   }) => super.upload(
+    clientVersion: clientVersion,
     newTasks: newTasks.copyAll(Task.fromJson),
     newCategories: newCategories.copyAll(Category.fromJson),
   );

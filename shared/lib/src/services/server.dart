@@ -1,3 +1,5 @@
+import "dart:math";
+
 import "package:shared/data.dart";
 import "service.dart";
 import "sync.dart";
@@ -29,6 +31,7 @@ class ServerResponse {
 
 abstract class TasksServer extends Service {
   Future<ServerResponse> upload({
+    required int clientVersion,
     required Iterable<Task> newTasks,
     required Iterable<Category> newCategories,
   });
@@ -41,6 +44,7 @@ class HostedTasksServer extends SyncService implements TasksServer {
 
   @override
   Future<ServerResponse> upload({
+    required int clientVersion,
     required Iterable<Task> newTasks,
     required Iterable<Category> newCategories,
   }) async {
@@ -52,7 +56,7 @@ class HostedTasksServer extends SyncService implements TasksServer {
         version: version,
       );
     }
-    version++;
+    version = max(version, clientVersion) + 1;
     for (final item in <Syncable>[...newTasks, ...newCategories]) {
       item.version = version;
     }
