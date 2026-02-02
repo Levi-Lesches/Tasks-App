@@ -4,12 +4,15 @@ import "dart:typed_data";
 import "package:collection/collection.dart";
 
 extension on InternetAddress {
-  String get firstOctet => address.split(".").first;
   InternetAddress get broadcast {
     final parts = rawAddress;
     parts[3] = 255;
     return InternetAddress.fromRawAddress(parts, type: InternetAddressType.IPv4);
   }
+
+  bool isOnSameSubnetAs(InternetAddress other) => rawAddress[0] == other.rawAddress[0]
+    && rawAddress[1] == other.rawAddress[1]
+    && rawAddress[2] == other.rawAddress[2];
 }
 
 enum ServerType {
@@ -47,10 +50,10 @@ class BroadcastServer {
     socket.send(buffer, datagram.address, datagram.port);
   }
 
-  Future<InternetAddress> getMatchingIp(InternetAddress other) async {
-    final otherOctet = other.firstOctet;
+  // NOTE: Due to [NetworkInterface] not exposing subnets, this will assume 255.255.255.0
+  static Future<InternetAddress> getMatchingIp(InternetAddress other) async {
     final addresses = await getAllAddresses();
-    return addresses.firstWhere((address) => address.firstOctet == otherOctet);
+    return addresses.firstWhere((address) => address.isOnSameSubnetAs(other));
   }
 }
 
