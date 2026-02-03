@@ -52,7 +52,7 @@ class TasksModel extends DataModel {
     try {
       services.client.tasks = tasks;
       services.client.categories = allLists;
-      final didChange = await services.client.sync();
+      final didChange = await services.client.sync(services.httpClient);
       if (didChange) {
         showSnackBar("Synced tasks to server");
         tasks = services.client.tasks;

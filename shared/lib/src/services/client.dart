@@ -4,11 +4,7 @@ import "server.dart";
 import "sync.dart";
 
 class TasksClient extends SyncService {
-  final TasksServer server;
-  TasksClient({
-    required this.server,
-    required super.database,
-  });
+  TasksClient({required super.database});
 
   void handleResponse(ServerResponse response) {
     version = response.version;
@@ -16,7 +12,7 @@ class TasksClient extends SyncService {
     categories.merge(response.categories);
   }
 
-  Future<bool> sync() async {
+  Future<bool> sync(TasksServer server) async {
     final oldVersion = version;
 
     // 1. Get all new items from the server

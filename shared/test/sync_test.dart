@@ -13,7 +13,7 @@ const db = MockDatabase();
 
 Future<(HostedTasksServer, TasksClient)> init2() async {
   final server = MockServer();
-  final client = TasksClient(database: db, server: server);
+  final client = TasksClient(database: db);
 
   await server.init();
   await client.init();
@@ -23,8 +23,8 @@ Future<(HostedTasksServer, TasksClient)> init2() async {
 
 Future<(HostedTasksServer, TasksClient, TasksClient)> init3() async {
   final server = MockServer();
-  final client1 = TasksClient(server: server, database: db);
-  final client2 = TasksClient(server: server, database: db);
+  final client1 = TasksClient(database: db);
+  final client2 = TasksClient(database: db);
   await server.init();
   await client1.init();
   await client2.init();
@@ -48,7 +48,7 @@ void main() {
     expect(task1.isDeleted, isFalse, reason: "Created task should not be deleted");
 
     client.tasks.add(task1);
-    await client.sync();
+    await client.sync(server);
 
     final serverTask = server.getTask(task1.id);
     final clientTask = client.getTask(task1.id);
@@ -71,7 +71,7 @@ void main() {
     final cat2 = Category(title: "Cat2");
     final task2 = Task(categoryID: cat2.id, title: "Task2");
     client.tasks.add(task2);
-    await client.sync();
+    await client.sync(server);
 
     var clientTask = client.getTask(task2.id);
     var serverTask = server.getTask(task2.id);
@@ -84,7 +84,7 @@ void main() {
 
     clientTask.deleted();
     expect(clientTask.isModified, isTrue);
-    await client.sync();
+    await client.sync(server);
 
     serverTask = server.getTask(task2.id);
     clientTask = client.getTask(task2.id);
@@ -112,8 +112,8 @@ void main() {
 
     final task = Task(categoryID: category.id, title: "Task1");
     client1.tasks.add(task);
-    await client1.sync();
-    await client2.sync();
+    await client1.sync(server);
+    await client2.sync(server);
     final client2Task = client2.getTask(task.id)!;
     expect(identical(task, client2Task), isFalse, reason: "Tasks are identical across clients");
     checkSync(services, 1, 1);
@@ -122,8 +122,8 @@ void main() {
     client2.tasks.add(task2);
     expect(client1.getTask(task2.id), isNull);
     expect(client2.getTask(task2.id), isNotNull);
-    await client2.sync();
-    await client1.sync();
+    await client2.sync(server);
+    await client1.sync(server);
     checkSync(services, 2, 2);
     final task2Client1 = client1.getTask(task2.id)!;
     final task2Client2 = client2.getTask(task2.id)!;
@@ -135,7 +135,7 @@ void main() {
     expect(client1.tasks.length, 3);
     expect(client2.tasks.length, 2);
 
-    await client1.sync();
+    await client1.sync(server);
     expect(server.version, 3);
     expect(server.tasks.length, 3);
     expect(client1.version, 3);
@@ -143,7 +143,7 @@ void main() {
     expect(client2.version, 2);
     expect(client2.tasks.length, 2);
 
-    await client2.sync();
+    await client2.sync(server);
     checkSync(services, 3, 3);
 
     var toDelete = client1.getTask(task2.id)!;
@@ -155,8 +155,8 @@ void main() {
     expect(toCheck.isDeleted, isFalse);
     expect(toCheck.isModified, isFalse);
 
-    await client1.sync();
-    await client2.sync();
+    await client1.sync(server);
+    await client2.sync(server);
     checkSync(services, 3, 4);
 
     toDelete = client1.getTask(task2.id)!;
