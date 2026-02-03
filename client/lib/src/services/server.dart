@@ -5,19 +5,15 @@ import "package:http/http.dart";
 import "package:shared/shared.dart";
 
 class HttpTasksServer extends Service implements TasksServer {
-  static const port = 5001;
-  final broadcaster = BroadcastClient();
   final client = Client();
-  FoundServer? server;
+  ServerInfo? server;
 
   @override
-  Future<void> init() async {
-    await broadcaster.init();
-  }
+  Future<void> init() async { }
 
-  Uri _baseUri(FoundServer server) => Uri.parse("http://${server.address.address}:$port");
+  Uri _baseUri(ServerInfo server) => Uri.parse("http://${server.address.address}:${server.port}");
 
-  Uri _downloadUri(FoundServer server, int version) => _baseUri(server).replace(
+  Uri _downloadUri(ServerInfo server, int version) => _baseUri(server).replace(
     path: "/download",
     queryParameters: {"version": version.toString()},
   );
@@ -40,7 +36,7 @@ class HttpTasksServer extends Service implements TasksServer {
 
   @override
   Future<ServerResponse> download(int version) async {
-    server ??= await broadcaster.broadcast();
+    server ??= await BroadcastClient.discover();
     if (server == null) throw SyncException("No servers found");
     final uri = _downloadUri(server!, version);
     final json = await _get(uri);

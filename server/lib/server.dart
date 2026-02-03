@@ -32,7 +32,9 @@ class ShelfTasksServer extends Service {
     print("Listening on port 5001");
 
     final serverType = Platform.isLinux ? ServerType.server : ServerType.pc;
-    final broadcastServer = BroadcastServer(serverType);
+    final address = await InternetAddress.lookup("home-pi");
+    final info = ServerInfo(address: address.first, port: 5001, type: serverType);
+    final broadcastServer = BroadcastServer(info);
     await broadcastServer.init();
     print("Listening for broadcasts on port 5002");
   }
