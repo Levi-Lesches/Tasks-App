@@ -9,10 +9,10 @@ import "package:shared/shared.dart";
 
 class ShelfTasksServer extends Service {
   final DatabaseService database;
-  final HostedTasksServer server;
+  final TasksServer server;
 
   ShelfTasksServer({required this.database}) :
-    server = HostedTasksServer(database: database);
+    server = HybridServer(database: database);
 
   Handler _parseVersion(Future<Response> Function(Request, int) handler) => (request) {
     final versionString = request.url.queryParameters["version"];

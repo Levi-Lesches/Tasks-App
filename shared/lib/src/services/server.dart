@@ -1,54 +1,20 @@
 import "dart:math";
 
 import "package:shared/data.dart";
-import "service.dart";
+
+import "server_base.dart";
 import "sync.dart";
 
-typedef AsyncFunc<T> = Future<void> Function(T);
-
-class ServerResponse {
-  final Iterable<Task> tasks;
-  final Iterable<Category> categories;
-  final int version;
-
-  const ServerResponse({
-    required this.tasks,
-    required this.categories,
-    required this.version,
-  });
-
-  ServerResponse.fromJson(Json json) :
-    tasks = json.toList("tasks", Task.fromJson),
-    categories = json.toList("categories", Category.fromJson),
-    version = json["version"];
-
-  Json toJson() => {
-    "tasks": tasks.toJson(),
-    "categories": categories.toJson(),
-    "version": version,
-  };
-}
-
-abstract class TasksServer extends Service {
-  Future<ServerResponse> upload({
-    required int clientVersion,
-    required Iterable<Task> newTasks,
-    required Iterable<Category> newCategories,
-  });
-
-  Future<ServerResponse?> download(int version);
-}
-
-class HostedTasksServer extends SyncService implements TasksServer {
-  HostedTasksServer({required super.database});
-
+mixin TasksServer on SyncService implements BaseTasksServer {
   @override
   Future<ServerResponse> upload({
     required int clientVersion,
     required Iterable<Task> newTasks,
     required Iterable<Category> newCategories,
   }) async {
-    final didChange = tasks.merge(newTasks) || categories.merge(newCategories);
+    final didChange = tasks.merge(newTasks)
+      || categories.merge(newCategories);
+    version = max(version, clientVersion);
     if (!didChange) {
       return ServerResponse(
         tasks: <Task>[],
@@ -56,7 +22,7 @@ class HostedTasksServer extends SyncService implements TasksServer {
         version: version,
       );
     }
-    version = max(version, clientVersion) + 1;
+    version++;
     for (final item in <Syncable>[...newTasks, ...newCategories]) {
       item.version = version;
     }
@@ -71,9 +37,12 @@ class HostedTasksServer extends SyncService implements TasksServer {
   }
 
   @override
-  Future<ServerResponse?> download(int version) async => ServerResponse(
-    tasks: tasks.newerThan(version),
-    categories: categories.newerThan(version),
-    version: version,
-  );
+  Future<ServerResponse?> download(int version) async {
+    await harden();
+    return ServerResponse(
+      tasks: tasks.newerThan(version),
+      categories: categories.newerThan(version),
+      version: version,
+    );
+  }
 }

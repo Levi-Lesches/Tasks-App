@@ -11,7 +11,7 @@ extension on SyncService {
 
 const db = MockDatabase();
 
-Future<(HostedTasksServer, TasksClient)> init2() async {
+Future<(TasksServer, BaseTasksClient)> init2() async {
   final server = MockServer();
   final client = TasksClient(database: db);
 
@@ -21,7 +21,7 @@ Future<(HostedTasksServer, TasksClient)> init2() async {
   return (server, client);
 }
 
-Future<(HostedTasksServer, TasksClient, TasksClient)> init3() async {
+Future<(TasksServer, BaseTasksClient, BaseTasksClient)> init3() async {
   final server = MockServer();
   final client1 = TasksClient(database: db);
   final client2 = TasksClient(database: db);

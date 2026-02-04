@@ -43,8 +43,11 @@ class MockDatabase implements DatabaseService {
   Future<void> restore(Directory newDir) async { }
 }
 
-class MockServer extends HostedTasksServer {
+class MockServer extends SyncService with TasksServer {
    MockServer() : super(database: const MockDatabase());
+
+  @override
+  Future<void> init() async { }
 
   @override
   Future<ServerResponse> upload({
@@ -58,9 +61,9 @@ class MockServer extends HostedTasksServer {
   );
 
   @override
-  Future<ServerResponse?> download(int version) async => ServerResponse(
-    tasks: tasks.newerThan(version).copyAll(Task.fromJson),
-    categories: categories.newerThan(version).copyAll(Category.fromJson),
+  Future<ServerResponse?> download(int clientVersion) async => ServerResponse(
+    tasks: tasks.newerThan(clientVersion).copyAll(Task.fromJson),
+    categories: categories.newerThan(clientVersion).copyAll(Category.fromJson),
     version: version,
   );
 }

@@ -37,8 +37,8 @@ extension SyncUtils<E extends Syncable> on List<E> {
       } else {
         final value = this[index];
         if (newValue.isModified || newValue.version > value.version) {
-          didChange = true;
           this[index] = newValue;
+          didChange |= newValue.isModified;
         }
       }
     }

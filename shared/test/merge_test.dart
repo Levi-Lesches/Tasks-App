@@ -55,7 +55,7 @@ void main() => group("merge()", () {
     expect(tasks.first, copy);
   });
 
-  test("returns true when a newer version is received", () {
+  test("returns false when a newer version is received", () {
     final task1 = Task(categoryID: category.id, title: "Task1", version: 1);
     final tasks = [task1];
 
@@ -66,7 +66,7 @@ void main() => group("merge()", () {
     expect(copy.version, greaterThan(task1.version));
 
     final didChange = tasks.merge([copy]);
-    expect(didChange, isTrue);
+    expect(didChange, isFalse);
     expect(tasks.length, 1);
     expect(tasks.first, copy);
   });

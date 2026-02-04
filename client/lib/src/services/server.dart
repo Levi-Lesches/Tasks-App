@@ -4,7 +4,7 @@ import "dart:convert";
 import "package:http/http.dart";
 import "package:shared/shared.dart";
 
-class HttpTasksServer extends Service implements TasksServer {
+class HttpTasksServer extends Service implements BaseTasksServer {
   final client = Client();
   ServerInfo? server;
 
