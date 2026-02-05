@@ -167,4 +167,21 @@ void main() {
     expect(toCheck.isDeleted, isTrue);
     expect(toCheck.isModified, isFalse);
   });
+
+  test("Downloads don't affect version numbers", () async {
+    final (server, client) = await init2();
+    client.version = 5;  // simulate an out-of-date server
+    expect(server.version, 0);
+    expect(client.version, 5);
+
+    final task = Task(categoryID: category.id, title: "Task");
+    client.tasks.add(task);
+
+    final response = await server.download(client.version);
+    expect(response.categories, isEmpty);
+    expect(response.tasks, isEmpty);
+    expect(response.version, 0);
+    expect(server.version, 0);
+    expect(client.version, 5);
+  });
 }

@@ -19,7 +19,6 @@ mixin BaseTasksClient on SyncService {
 
     // 1. Get all new items from the server
     var response = await server.download(version);
-    if (response == null) throw SyncException("Could not download from server");
     _handleResponse(response);
 
     // 2. Upload all new items to the server

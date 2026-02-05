@@ -2,13 +2,12 @@ import "dart:io";
 
 import "package:collection/collection.dart";
 import "package:mdns_dart/mdns_dart.dart";
+import "package:meta/meta.dart";
 
 import "service.dart";
 
 enum ServerType {
-  server,
-  pc,
-  phone;
+  server, pc, phone;
 
   static ServerType? tryParse(String name) => values.firstWhereOrNull((v) => v.name == name);
 }
@@ -26,33 +25,21 @@ class ServerInfo {
 }
 
 class BroadcastServer extends Service {
-  final ServerInfo info;
-  BroadcastServer(this.info);
-
-  static Future<NetworkInterface?> getInterfaceFor(InternetAddress address) async {
-    final interfaces = await NetworkInterface.list(includeLinkLocal: true, includeLoopback: true, type: InternetAddressType.IPv4);
-    return interfaces
-      .firstWhereOrNull((i) => i.addresses.contains(address));
-  }
+  final int port;
+  final ServerType type;
+  BroadcastServer({required this.port, required this.type});
 
   MDNSServer? server;
 
   @override
   Future<void> init() async {
-    final interface = await getInterfaceFor(info.address);
-    if (interface == null) throw ArgumentError("Could not find a network interface for ${info.address}");
     final zone = await MDNSService.create(
-      instance: "Tasks",
+      instance: Platform.localHostname,
       service: "tasks",
-      ips: [info.address],
-      port: info.port,
-      txt: [info.type.name]
+      port: port,
+      txt: [type.name]
     );
-    final config = MDNSServerConfig(
-      zone: zone,
-      networkInterface: interface,
-      logger: (message) { },
-    );
+    final config = MDNSServerConfig(zone: zone, logger: (message) { });
     server = MDNSServer(config);
     await server!.start();
   }
@@ -63,14 +50,18 @@ class BroadcastServer extends Service {
 }
 
 class BroadcastClient {
+  @visibleForTesting
+  static Future<List<ServiceEntry>> mdnsLookup() => MDNSClient.discover(
+    "tasks",
+    wantUnicastResponse: true,
+    timeout: const Duration(seconds: 1),
+  );
+
   static Future<ServerInfo?> discover() async {
-    final services = await MDNSClient.discover(
-      "tasks",
-      wantUnicastResponse: true,
-      timeout: const Duration(seconds: 1),
-    );
+    final services = await mdnsLookup();
     final servers = <ServerInfo>[];
     for (final service in services) {
+      if (service.host == Platform.localHostname) continue;
       final ip = service.addrV4;
       if (ip == null) continue;
       final type = ServerType.tryParse(service.info);

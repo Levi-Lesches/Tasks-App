@@ -37,11 +37,11 @@ mixin TasksServer on SyncService implements BaseTasksServer {
   }
 
   @override
-  Future<ServerResponse?> download(int version) async {
+  Future<ServerResponse> download(int clientVersion) async {
     await harden();
     return ServerResponse(
-      tasks: tasks.newerThan(version),
-      categories: categories.newerThan(version),
+      tasks: tasks.newerThan(clientVersion),
+      categories: categories.newerThan(clientVersion),
       version: version,
     );
   }

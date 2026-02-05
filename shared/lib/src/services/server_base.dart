@@ -31,5 +31,5 @@ abstract class BaseTasksServer extends Service {
     required Iterable<Category> newCategories,
   });
 
-  Future<ServerResponse?> download(int version);
+  Future<ServerResponse> download(int version);
 }

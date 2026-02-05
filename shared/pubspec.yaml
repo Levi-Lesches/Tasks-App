@@ -18,3 +18,10 @@ dependencies:
 dev_dependencies:
   lints: ^6.0.0
   test: ^1.25.6
+
+dependency_overrides:
+  # Version 2.1.0 has a bug in parsing IPv6 addresses.
+  # We don't use IPv6 but that bug throws an error during all mDNS responses
+  # See: https://github.com/animeshxd/mdns_dart/issues/12
+  mdns_dart:
+    git: https://github.com/animeshxd/mdns_dart

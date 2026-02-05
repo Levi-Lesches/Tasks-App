@@ -61,7 +61,7 @@ class MockServer extends SyncService with TasksServer {
   );
 
   @override
-  Future<ServerResponse?> download(int clientVersion) async => ServerResponse(
+  Future<ServerResponse> download(int clientVersion) async => ServerResponse(
     tasks: tasks.newerThan(clientVersion).copyAll(Task.fromJson),
     categories: categories.newerThan(clientVersion).copyAll(Category.fromJson),
     version: version,

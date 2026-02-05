@@ -32,16 +32,13 @@ class ShelfTasksServer extends Service {
     print("Listening on port 5001");
 
     final serverType = Platform.isLinux ? ServerType.server : ServerType.pc;
-    final address = await InternetAddress.lookup("home-pi");
-    final info = ServerInfo(address: address.first, port: 5001, type: serverType);
-    final broadcastServer = BroadcastServer(info);
+    final broadcastServer = BroadcastServer(port: 5001, type: serverType);
     await broadcastServer.init();
-    print("Listening for broadcasts on port 5002");
+    print("Advertising a Tasks service via mDNS");
   }
 
   Future<Response> download(Request request, int version) async {
     final response = await server.download(version);
-    if (response == null) return Response.internalServerError();
     final json = response.toJson();
     return Response.ok(jsonEncode(json));
   }
