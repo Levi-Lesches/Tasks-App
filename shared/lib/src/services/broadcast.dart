@@ -27,7 +27,12 @@ class ServerInfo {
 class BroadcastServer extends Service {
   final int port;
   final ServerType type;
-  BroadcastServer({required this.port, required this.type});
+  final String? hostName;
+  BroadcastServer({
+    required this.port,
+    required this.type,
+    this.hostName,
+  });
 
   MDNSServer? server;
 
@@ -36,6 +41,7 @@ class BroadcastServer extends Service {
     final zone = await MDNSService.create(
       instance: Platform.localHostname,
       service: "tasks",
+      hostName: hostName,
       port: port,
       txt: [type.name]
     );

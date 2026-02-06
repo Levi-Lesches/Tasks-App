@@ -8,10 +8,10 @@ import "package:shelf_router/shelf_router.dart";
 import "package:shared/shared.dart";
 
 class ShelfTasksServer extends Service {
-  final DatabaseService database;
+  final String? hostName;
   final TasksServer server;
 
-  ShelfTasksServer({required this.database}) :
+  ShelfTasksServer({required DatabaseService database, this.hostName}) :
     server = HybridServer(database: database);
 
   Handler _parseVersion(Future<Response> Function(Request, int) handler) => (request) {
@@ -32,7 +32,7 @@ class ShelfTasksServer extends Service {
     print("Listening on port 5001");
 
     final serverType = Platform.isLinux ? ServerType.server : ServerType.pc;
-    final broadcastServer = BroadcastServer(port: 5001, type: serverType);
+    final broadcastServer = BroadcastServer(port: 5001, type: serverType, hostName: hostName);
     await broadcastServer.init();
     print("Advertising a Tasks service via mDNS");
   }
