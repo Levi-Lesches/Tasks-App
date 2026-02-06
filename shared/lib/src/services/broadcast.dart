@@ -1,100 +1,81 @@
-import "dart:async";
 import "dart:io";
-import "dart:typed_data";
-import "package:collection/collection.dart";
 
-extension on InternetAddress {
-  String get firstOctet => address.split(".").first;
-  InternetAddress get broadcast {
-    final parts = rawAddress;
-    parts[3] = 255;
-    return InternetAddress.fromRawAddress(parts, type: InternetAddressType.IPv4);
-  }
-}
+import "package:collection/collection.dart";
+import "package:mdns_dart/mdns_dart.dart";
+import "package:meta/meta.dart";
+
+import "service.dart";
 
 enum ServerType {
-  server,
-  pc,
-  phone,
+  server, pc, phone;
+
+  static ServerType? tryParse(String name) => values.firstWhereOrNull((v) => v.name == name);
 }
 
-typedef FoundServer = ({InternetAddress address, ServerType type});
-
-Future<Iterable<InternetAddress>> getAllAddresses() async =>
-  (await NetworkInterface.list(type: InternetAddressType.IPv4))
-  .expand((interface) => interface.addresses);
-
-class BroadcastServer {
-  static const port = 5002;
-  static const response = "Tasks-App-Response";
-  late final RawDatagramSocket socket;
+class ServerInfo {
+  final InternetAddress address;
+  final int port;
   final ServerType type;
-  BroadcastServer(this.type);
 
-  Future<void> init() async {
-    socket = await RawDatagramSocket.bind("0.0.0.0", port);
-    socket.listen(onData);
-  }
-
-  Future<void> onData(RawSocketEvent event) async {
-    final datagram = socket.receive();
-    if (datagram == null) return;
-    final contents = String.fromCharCodes(datagram.data);
-    if (contents != BroadcastClient.requestString) return;
-    final address = await getMatchingIp(datagram.address);
-    final message = "$response ${address.address} ${type.index}";
-    final buffer = Uint8List.fromList(message.codeUnits);
-    socket.send(buffer, datagram.address, datagram.port);
-  }
-
-  Future<InternetAddress> getMatchingIp(InternetAddress other) async {
-    final otherOctet = other.firstOctet;
-    final addresses = await getAllAddresses();
-    return addresses.firstWhere((address) => address.firstOctet == otherOctet);
-  }
+  const ServerInfo({
+    required this.address,
+    required this.port,
+    required this.type,
+  });
 }
 
+class BroadcastServer extends Service {
+  final int port;
+  final ServerType type;
+  final String? hostName;
+  BroadcastServer({
+    required this.port,
+    required this.type,
+    this.hostName,
+  });
+
+  MDNSServer? server;
+
+  @override
+  Future<void> init() async {
+    final zone = await MDNSService.create(
+      instance: Platform.localHostname,
+      service: "tasks",
+      hostName: hostName,
+      port: port,
+      txt: [type.name]
+    );
+    final config = MDNSServerConfig(zone: zone, logger: (message) { });
+    server = MDNSServer(config);
+    await server!.start();
+  }
+
+  Future<void> dispose() async {
+    await server?.stop();
+  }
+}
 
 class BroadcastClient {
-  static const requestString = "Tasks-App";
-  static const port = 5003;
+  @visibleForTesting
+  static Future<List<ServiceEntry>> mdnsLookup() => MDNSClient.discover(
+    "tasks",
+    wantUnicastResponse: true,
+    timeout: const Duration(seconds: 1),
+  );
 
-  late final RawDatagramSocket socket;
-
-  Future<void> init() async {
-    socket = await RawDatagramSocket.bind("0.0.0.0", port);
-    if (Platform.isAndroid) socket.broadcastEnabled = true;
-    socket.listen(onData);
-  }
-
-  Future<FoundServer?> broadcast() async {
-    servers = [];
-    final buffer = Uint8List.fromList(requestString.codeUnits);
-    for (final address in await getAllAddresses()) {
-      socket.send(buffer, address.broadcast, BroadcastServer.port);
+  static Future<ServerInfo?> discover() async {
+    final services = await mdnsLookup();
+    final servers = <ServerInfo>[];
+    for (final service in services) {
+      if (service.host == Platform.localHostname) continue;
+      final ip = service.addrV4;
+      if (ip == null) continue;
+      final type = ServerType.tryParse(service.info);
+      if (type == null) continue;
+      final info = ServerInfo(address: ip, port: service.port, type: type);
+      servers.add(info);
     }
-    const delay = Duration(milliseconds: 3000);
-    await Future<void>.delayed(delay);
-    final result = ServerType.values.map(  // choose highest priority server
-      (serverType) => servers.firstWhereOrNull((tuple) => serverType == tuple.type))
-      .firstWhereOrNull((tuple) => tuple != null);
-    return result;
-  }
-
-  void dispose() => socket.close();
-
-  List<FoundServer> servers = [];
-
-  Future<void> onData(RawSocketEvent event) async {
-    final datagram = socket.receive();
-    if (datagram == null) return;
-    final message = String.fromCharCodes(datagram.data);
-    final [response, ip, index] = message.split(" ");
-    if (response != BroadcastServer.response) return;
-    final allAddresses = await getAllAddresses();
-    final result = InternetAddress(ip);
-    final type = ServerType.values[int.parse(index)];
-    if (allAddresses.contains(result)) return;
-    servers.add( (address: result, type: type) );
+    servers.sortBy((s) => s.type.index);
+    return servers.firstOrNull;
   }
 }

@@ -18,7 +18,7 @@ class Services extends Service {
   // Define your services here
   late final DatabaseService database;
   late final httpClient = HttpTasksServer();
-  late final client = TasksClient(server: httpClient, database: database);
+  late final client = HybridServer(database: database);
 
 	/// The different services to initialize, in this order.
 	List<Service> get services => [database, httpClient, client];

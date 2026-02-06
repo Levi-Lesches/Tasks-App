@@ -43,7 +43,7 @@ class TasksModel extends DataModel {
     notifyListeners();
   }
 
-  // Trinket works by first downloading, then uploading
+  // Works by first downloading, then uploading
   // Tasks have a modified flag on client, version flag on server
   // The server and client both have version numbers
   // Download: POST w/ client version. Server returns all tasks that have been updated since then + server_version
@@ -52,7 +52,7 @@ class TasksModel extends DataModel {
     try {
       services.client.tasks = tasks;
       services.client.categories = allLists;
-      final didChange = await services.client.sync();
+      final didChange = await services.client.sync(services.httpClient);
       if (didChange) {
         showSnackBar("Synced tasks to server");
         tasks = services.client.tasks;

@@ -1,28 +1,25 @@
+import "dart:math";
+
 import "package:shared/data.dart";
 
-import "server.dart";
+import "server_base.dart";
 import "sync.dart";
 
-class TasksClient extends SyncService {
-  final TasksServer server;
-  TasksClient({
-    required this.server,
-    required super.database,
-  });
+class TasksClient = SyncService with BaseTasksClient;
 
-  void handleResponse(ServerResponse response) {
-    version = response.version;
+mixin BaseTasksClient on SyncService {
+  void _handleResponse(ServerResponse response) {
+    version = max(version, response.version);
     tasks.merge(response.tasks);
     categories.merge(response.categories);
   }
 
-  Future<bool> sync() async {
+  Future<bool> sync(BaseTasksServer server) async {
     final oldVersion = version;
 
     // 1. Get all new items from the server
     var response = await server.download(version);
-    if (response == null) throw SyncException("Could not download from server");
-    handleResponse(response);
+    _handleResponse(response);
 
     // 2. Upload all new items to the server
     response = await server.upload(
@@ -30,7 +27,7 @@ class TasksClient extends SyncService {
       newTasks: tasks.modifiedOrNewerThan(response.version),
       newCategories: categories.modifiedOrNewerThan(response.version),
     );
-    handleResponse(response);
+    _handleResponse(response);
 
     // 3. Update the local database
     await database.writeCategories(categories);

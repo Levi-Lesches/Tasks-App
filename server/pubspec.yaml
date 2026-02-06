@@ -10,6 +10,7 @@ environment:
 # Add regular dependencies here.
 # resolution: workspace
 dependencies:
+  mdns_dart: ^2.1.0
   shared:
     path: ../shared
   shelf: ^1.4.2

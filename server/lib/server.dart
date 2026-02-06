@@ -8,11 +8,11 @@ import "package:shelf_router/shelf_router.dart";
 import "package:shared/shared.dart";
 
 class ShelfTasksServer extends Service {
-  final DatabaseService database;
-  final HostedTasksServer server;
+  final String? hostName;
+  final TasksServer server;
 
-  ShelfTasksServer({required this.database}) :
-    server = HostedTasksServer(database: database);
+  ShelfTasksServer({required DatabaseService database, this.hostName}) :
+    server = HybridServer(database: database);
 
   Handler _parseVersion(Future<Response> Function(Request, int) handler) => (request) {
     final versionString = request.url.queryParameters["version"];
@@ -32,14 +32,13 @@ class ShelfTasksServer extends Service {
     print("Listening on port 5001");
 
     final serverType = Platform.isLinux ? ServerType.server : ServerType.pc;
-    final broadcastServer = BroadcastServer(serverType);
+    final broadcastServer = BroadcastServer(port: 5001, type: serverType, hostName: hostName);
     await broadcastServer.init();
-    print("Listening for broadcasts on port 5002");
+    print("Advertising a Tasks service via mDNS");
   }
 
   Future<Response> download(Request request, int version) async {
     final response = await server.download(version);
-    if (response == null) return Response.internalServerError();
     final json = response.toJson();
     return Response.ok(jsonEncode(json));
   }
