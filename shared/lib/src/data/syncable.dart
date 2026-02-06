@@ -24,6 +24,11 @@ abstract class Syncable<T extends Object> extends JsonSerializable {
     modified();
     isDeleted = true;
   }
+
+  void undelete() {
+    modified();
+    isDeleted = false;
+  }
 }
 
 extension SyncUtils<E extends Syncable> on List<E> {

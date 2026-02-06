@@ -34,6 +34,8 @@ class HomeModel extends ViewModel {
       await models.tasks.createCategory("New Category");
       selectCategory(0);
       return;
+    } else if (categoryIndex >= categories.length) {
+      categoryIndex = 0;
     }
     tasks = models.tasks.getTasksForCategory(category).toList();
     finishedTasks = models.tasks.getTasksForCategory(category, done: true).toList();

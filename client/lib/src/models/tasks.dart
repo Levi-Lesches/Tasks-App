@@ -101,7 +101,16 @@ class TasksModel extends DataModel {
   }
 
   void _showTaskUndoPrompt(Task task) {
-    showSnackBar("Deleted $task", SnackBarAction(label: "Undo", onPressed: () => task.modified()));
+    showSnackBar(
+      "Deleted $task",
+      SnackBarAction(
+        label: "Undo",
+        onPressed: () {
+          task.undelete();
+          saveTasks();
+        },
+      ),
+    );
   }
 
   void _showCategoryUndoPrompt(Category category, List<Task> tasks) {
@@ -109,10 +118,12 @@ class TasksModel extends DataModel {
     final action = SnackBarAction(
       label: "Undo",
       onPressed: () async {
-        category.modified();
+        category.undelete();
         for (final task in tasks) {
-          task.modified();
+          task.undelete();
         }
+        await saveCategories();
+        await saveTasks();
       },
     );
     showSnackBar(message, action);
