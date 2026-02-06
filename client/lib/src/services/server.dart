@@ -36,7 +36,7 @@ class HttpTasksServer extends Service implements BaseTasksServer {
 
   @override
   Future<ServerResponse> download(int version) async {
-    server ??= await BroadcastClient.discover();
+    server ??= await BroadcastClient().discover();
     if (server == null) throw SyncException("No servers found");
     final uri = _downloadUri(server!, version);
     final json = await _get(uri);

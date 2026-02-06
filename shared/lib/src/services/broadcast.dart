@@ -63,8 +63,11 @@ class BroadcastClient {
     timeout: const Duration(seconds: 1),
   );
 
-  static Future<ServerInfo?> discover() async {
-    final services = await mdnsLookup();
+  @visibleForTesting
+  Future<List<ServiceEntry>> lookup() => mdnsLookup();
+
+  Future<ServerInfo?> discover() async {
+    final services = await lookup();
     final servers = <ServerInfo>[];
     for (final service in services) {
       if (service.host == Platform.localHostname) continue;

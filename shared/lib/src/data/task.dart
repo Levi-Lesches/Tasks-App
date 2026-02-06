@@ -100,33 +100,4 @@ class Task extends Syncable<TaskID> {
 
   @override
   String toString() => title;
-
-  String? get bodyText {
-    final buffer = StringBuffer();
-    if (description != null) {
-      final lines = description!.split("\n");
-      final line = lines.first;
-      if (line.length > 50) {
-        buffer.write(line.substring(0, 50));
-      } else {
-        buffer.write(line);
-      }
-      if (lines.first.length > 50 || lines.length > 1) buffer.write("...");
-    }
-    if (Task.showDates) {
-      if (startDate != null || doneDate != null) {
-        if (description != null) buffer.writeln();
-        if (startDate != null) buffer.write("Started on ${formatDate(startDate!)}");
-        if (doneDate != null) {
-          if (startDate != null) buffer.write(" -- ");
-          buffer.write("Finished on ${formatDate(doneDate!)}");
-        }
-      }
-    }
-    return buffer.isEmpty ? null : buffer.toString();
-  }
-
-  bool get isThreeLine => showDates && (description != null && (doneDate != null || startDate != null));
-
-  static bool showDates = false;
 }

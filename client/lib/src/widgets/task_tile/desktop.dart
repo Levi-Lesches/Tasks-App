@@ -5,6 +5,25 @@ import "package:tasks/pages.dart";
 import "package:tasks/view_models.dart";
 import "package:tasks/widgets.dart";
 
+extension on Task {
+  /// Returns a one-line version of the description.
+  ///
+  /// Returns only the first line of the description, truncated to 50 characters. If the description
+  /// is null, returns null instead.
+  String? get shortDescription {
+    final firstLine = description
+      ?.split("\n").firstOrNull
+      ?.trim().nullIfEmpty;
+    if (firstLine == null) {
+      return null;
+    } else if (firstLine.length > 50) {
+      return "${firstLine.substring(0, 50)}...";
+    } else {
+      return firstLine;
+    }
+  }
+}
+
 class TaskTileViewModel extends ViewModel {
   late final editor = TextEditor(onEdit);
 
@@ -80,9 +99,9 @@ class TaskTile extends ReactiveWidget<TaskTileViewModel> {
               editor: model.editor,
               hint: "New Task",
             ) : oneLine(task.title),
-          subtitle: task.bodyText == null
-            ? null : oneLine(task.bodyText!),
-          isThreeLine: task.isThreeLine,
+          subtitle: task.shortDescription == null
+            ? null : oneLine(task.shortDescription!),
+          isThreeLine: false,
           leading: IconButton(
             icon: const Icon(Icons.delete),
             onPressed: () => models.tasks.deleteTask(task),
@@ -99,7 +118,7 @@ class TaskTile extends ReactiveWidget<TaskTileViewModel> {
         ),
       ),
       SizedBox(
-        height: task.bodyText == null ? 40 : 60,
+        height: task.shortDescription == null ? 40 : 60,
         child: const VerticalDivider(),
       ),
       MenuPicker(
@@ -110,7 +129,7 @@ class TaskTile extends ReactiveWidget<TaskTileViewModel> {
         onChanged: model.changeStatus,
       ),
       SizedBox(
-        height: task.bodyText == null ? 40 : 60,
+        height: task.shortDescription == null ? 40 : 60,
         child: const VerticalDivider(),
       ),
       MenuPicker(

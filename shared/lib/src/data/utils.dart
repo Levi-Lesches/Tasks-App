@@ -9,14 +9,6 @@ extension MapUtils<K, V> on Map<K, V> {
 	Iterable<(K, V)> get records => entries.map((entry) => (entry.key, entry.value));
 }
 
-/// Zips two lists, like Python
-Iterable<(E1, E2)> zip<E1, E2>(List<E1> list1, List<E2> list2) sync* {
-  if (list1.length != list2.length) throw ArgumentError("Trying to zip lists of different lengths");
-  for (var index = 0; index < list1.length; index++) {
-    yield (list1[index], list2[index]);
-  }
-}
-
 /// Extensions on lists
 extension ListUtils<E> on List<E> {
   /// Iterates over a pair of indexes and elements, like Python
@@ -36,7 +28,7 @@ extension ListUtils<E> on List<E> {
   }
 }
 
-extension PathUtils on FileSystemEntity {
+extension PathUtils on Directory {
   String operator /(String other) => "$path/$other";
 }
 
@@ -71,5 +63,4 @@ extension JsonUtils on Json {
     (this[key] as List).cast<Json>().map(fromJson).toList();
 }
 
-String formatDate(DateTime date) => "${date.month}/${date.day}/${date.year}";
 String formatTimestamp(DateTime dt) => "${dt.year}-${dt.month}-${dt.day}-${dt.hour}-${dt.minute}-${dt.second}";
