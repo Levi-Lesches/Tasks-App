@@ -12,8 +12,10 @@ mixin TasksServer on SyncService implements BaseTasksServer {
     required Iterable<Task> newTasks,
     required Iterable<Category> newCategories,
   }) async {
-    final didChange = tasks.merge(newTasks)
-      || categories.merge(newCategories);
+    // These three lines are split to avoid short-circuiting.
+    final tasksChanged = tasks.merge(newTasks);
+    final categoriesChanged = categories.merge(newCategories);
+    final didChange = tasksChanged || categoriesChanged;
     version = max(version, clientVersion);
     if (!didChange) {
       return ServerResponse(
