@@ -9,6 +9,12 @@ class SyncService extends Service {
   final DatabaseService database;
   SyncService({required this.database});
 
+  Future<void> saveAll() async {
+    await database.writeTasks(tasks);
+    await database.writeCategories(categories);
+    await database.saveVersion(version);
+  }
+
   @override
   Future<void> init() async {
     version = await database.getVersion();

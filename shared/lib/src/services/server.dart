@@ -17,25 +17,25 @@ mixin TasksServer on SyncService implements BaseTasksServer {
     final categoriesChanged = categories.merge(newCategories);
     final didChange = tasksChanged || categoriesChanged;
     version = max(version, clientVersion);
-    await database.saveVersion(version);
     if (!didChange) {
+      await saveAll();
       return ServerResponse(
         tasks: <Task>[],
         categories: <Category>[],
         version: version,
       );
+    } else {
+      version++;
+      for (final item in <Syncable>[...newTasks, ...newCategories]) {
+        item.version = version;
+      }
+      await saveAll();
+      return ServerResponse(
+        tasks: newTasks,
+        categories: newCategories,
+        version: version,
+      );
     }
-    version++;
-    for (final item in <Syncable>[...newTasks, ...newCategories]) {
-      item.version = version;
-    }
-    await database.writeTasks(tasks);
-    await database.writeCategories(categories);
-    return ServerResponse(
-      tasks: newTasks,
-      categories: newCategories,
-      version: version,
-    );
   }
 
   @override
