@@ -25,7 +25,7 @@ class HttpTasksServer extends Service implements BaseTasksServer {
       final response = await func().timeout(const Duration(seconds: 3));
       if (response.statusCode != 200) throw SyncException("Bad response: ${response.statusCode}");
       return jsonDecode(response.body) as Json;
-    } on TimeoutException {
+    } catch (error) {
       server = null;
       throw SyncException("Sync timed out");
     }

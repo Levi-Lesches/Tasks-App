@@ -17,6 +17,7 @@ mixin TasksServer on SyncService implements BaseTasksServer {
     final categoriesChanged = categories.merge(newCategories);
     final didChange = tasksChanged || categoriesChanged;
     version = max(version, clientVersion);
+    await database.saveVersion(version);
     if (!didChange) {
       return ServerResponse(
         tasks: <Task>[],
@@ -30,7 +31,6 @@ mixin TasksServer on SyncService implements BaseTasksServer {
     }
     await database.writeTasks(tasks);
     await database.writeCategories(categories);
-    await database.saveVersion(version);
     return ServerResponse(
       tasks: newTasks,
       categories: newCategories,

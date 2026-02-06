@@ -32,7 +32,7 @@ extension SyncUtils<E extends Syncable> on List<E> {
     for (final newValue in updated) {
       final index = indexWhereOrNull((value) => value.id == newValue.id);
       if (index == null) {
-        didChange = true;
+        didChange |= newValue.isModified;
         add(newValue);
       } else {
         final value = this[index];

@@ -174,14 +174,29 @@ void main() {
     expect(server.version, 0);
     expect(client.version, 5);
 
-    final task = Task(categoryID: category.id, title: "Task");
-    client.tasks.add(task);
-
     final response = await server.download(client.version);
     expect(response.categories, isEmpty);
     expect(response.tasks, isEmpty);
     expect(response.version, 0);
     expect(server.version, 0);
     expect(client.version, 5);
+  });
+
+  test("Server can catch up to a newer client", () async {
+    final (server, client) = await init2();
+    client.version = 5;
+    final task = Task(categoryID: category.id, title: "Task", version: 5);
+    client.tasks.add(task);
+
+    expect(client.version, 5);
+    expect(client.tasks, hasLength(1));
+    expect(server.version, 0);
+    expect(server.tasks, isEmpty);
+
+    await client.sync(server);
+    expect(client.version, 5);
+    expect(client.tasks, hasLength(1));
+    expect(server.version, 5);
+    expect(server.tasks, hasLength(1));
   });
 }
