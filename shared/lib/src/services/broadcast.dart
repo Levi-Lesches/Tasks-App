@@ -57,11 +57,15 @@ class BroadcastServer extends Service {
 
 class BroadcastClient {
   @visibleForTesting
-  static Future<List<ServiceEntry>> mdnsLookup() => MDNSClient.discover(
-    "tasks",
-    wantUnicastResponse: true,
-    timeout: const Duration(seconds: 1),
-  );
+  static Future<List<ServiceEntry>> mdnsLookup() async => [
+    for (final interface in await NetworkInterface.list())
+      ...await MDNSClient.discover(
+        "tasks",
+        wantUnicastResponse: true,
+        timeout: const Duration(milliseconds: 250),
+        networkInterface: interface,
+      ),
+  ];
 
   @visibleForTesting
   Future<List<ServiceEntry>> lookup() => mdnsLookup();
